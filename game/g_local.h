@@ -878,16 +878,8 @@ typedef struct
 
 	qboolean	spectator;			// client is a spectator
 
-	//dsq2
-	short dmg_blaster;
-	short dmg_shotgun;
-	short dmg_sshotgun;
-	short dmg_bullet;
-	short dmg_grenade;
-	short dmg_rocket;
-	short dmg_hyperblaster;
-	short dmg_railgun;
-	short dmg_bfg;
+	//DSQ2
+	qboolean bonfire;
 
 } client_persistant_t;
 
@@ -900,6 +892,17 @@ typedef struct
 	vec3_t		cmd_angles;			// angles sent over in the last command
 
 	qboolean	spectator;			// client is a spectator
+
+	//dsq2
+	short dmg_blaster;
+	short dmg_shotgun;
+	short dmg_sshotgun;
+	short dmg_bullet;
+	short dmg_grenade;
+	short dmg_rocket;
+	short dmg_hyperblaster;
+	short dmg_railgun;
+	short dmg_bfg;
 } client_respawn_t;
 
 // this structure is cleared on each PutClientInServer(),

@@ -348,6 +348,10 @@ void WeaponMenuOpen(edict_t *ent, pmenuhnd_t *p)
 	gitem_t *it;
 	int i,j;
 	j = 7;
+	if (!ent->client->pers.bonfire) {
+		gi.cprintf(ent, PRINT_HIGH, "Weapons can't be upgraded here!\n");
+		return;
+	}
 	for (i = 2; i <= 12; i++) {
 		weaponmenu[i].text = "";
 		while(j <= 18) {

@@ -104,6 +104,8 @@ The normal starting point for a level.
 */
 void SP_info_player_start(edict_t *self)
 {
+	SP_misc_teleporter_dest(self);
+	M_droptofloor(self);
 	if (!coop->value)
 		return;
 	if(Q_stricmp(level.mapname, "security") == 0)
@@ -626,15 +628,15 @@ void InitClientPersistant (gclient_t *client)
 	client->pers.connected = true;
 
 	//dsq2
-	client->pers.dmg_blaster =	10;
-	client->pers.dmg_shotgun =	4;
-	client->pers.dmg_sshotgun = 6;
-	client->pers.dmg_bullet  =	8;
-	client->pers.dmg_grenade =	120;
-	client->pers.dmg_rocket  =	100;
-	client->pers.dmg_hyperblaster  =	15;
-	client->pers.dmg_railgun =	100;
-	client->pers.dmg_bfg =		200;
+	client->resp.dmg_blaster =	10;
+	client->resp.dmg_shotgun =	4;
+	client->resp.dmg_sshotgun = 6;
+	client->resp.dmg_bullet  =	8;
+	client->resp.dmg_grenade =	120;
+	client->resp.dmg_rocket  =	100;
+	client->resp.dmg_hyperblaster  =	15;
+	client->resp.dmg_railgun =	100;
+	client->resp.dmg_bfg =		200;
 	//health
 	client->pers.health_flask = 4;
 	client->pers.souls = 0;
@@ -1011,7 +1013,8 @@ void respawn (edict_t *self)
 	}
 
 	// restart the entire server
-	gi.AddCommandString ("menu_loadgame\n");
+	//gi.AddCommandString ("menu_loadgame\n");
+	
 }
 
 /* 
@@ -1607,7 +1610,7 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 			level.exitintermission = true;
 		return;
 	}
-
+	client->pers.bonfire = false;
 	pm_passent = ent;
 
 	if (ent->client->chase_target) {
