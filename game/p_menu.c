@@ -337,6 +337,13 @@ pmenu_t weaponmenu[] = {
 
 void MainMenuOpen(edict_t *ent)
 {
+	if (!ent->client->pers.bonfire) {
+		gi.cprintf(ent, PRINT_HIGH, "Not at a bonfire!\n");
+		return;
+	}
+	G_FreeEdict(ent);
+	PutClientInServer(ent);
+	SpawnMonsters(ent);
 	PMenu_Close(ent);
 	PMenu_Open(ent, mainmenu, -1, sizeof(mainmenu) / sizeof(pmenu_t), NULL);
 	mainmenu[2].SelectFunc = WeaponMenuOpen;

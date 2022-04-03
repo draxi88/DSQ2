@@ -1788,24 +1788,12 @@ void teleporter_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_
 
 	if (!other->client)
 		return;
-	if (stricmp(self->owner->classname, "wep_tp") == 0) {
-		while ((spot = G_Find(spot, FOFS(classname), "wep_tp_dest")) != NULL)
-		{
-			if (spot->count == self->owner->count) {
-				dest = spot;
-				break;
-			}
-		}
+	dest = G_Find(NULL, FOFS(targetname), self->target);
+	if (!dest)
+	{
+		gi.dprintf("Couldn't find destination\n");
+		return;
 	}
-	else {
-		dest = G_Find(NULL, FOFS(targetname), self->target);
-		if (!dest)
-		{
-			gi.dprintf("Couldn't find destination\n");
-			return;
-		}
-	}
-
 	// unlink to make sure it can't possibly interfere with KillBox
 	gi.unlinkentity (other);
 
@@ -1874,11 +1862,22 @@ void SP_misc_teleporter (edict_t *ent)
 	
 }
 
+
+void bonfire_touch(edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf) {
+	if (!other->client)
+		return;
+
+	other->client->pers.bonfire = true;
+}
+
 /*QUAKED misc_teleporter_dest (1 0 0) (-32 -32 -24) (32 32 -16)
 Point teleporters at these.
 */
 void SP_misc_teleporter_dest (edict_t *ent)
 {
+	if (strcmp(ent->classname, "info_player_start") == 0) { //DSQ2
+		ent->touch = bonfire_touch;
+	}
 	gi.setmodel (ent, "models/objects/dmspot/tris.md2");
 	ent->s.skinnum = 0;
 	ent->solid = SOLID_BBOX;

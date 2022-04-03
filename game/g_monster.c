@@ -510,15 +510,15 @@ enemy as activator.
 */
 void monster_death_use (edict_t *self)
 {
-	//self->enemy->client->pers.souls += self->max_health;
-
 	self->flags &= ~(FL_FLY|FL_SWIM);
 	self->monsterinfo.aiflags &= AI_GOOD_GUY;
 
+	//DSQ2
 	gitem_t *soul;
 	soul = &itemlist[32];
 	soul->count_width = self->max_health;
 	Drop_Item(self, soul);
+	//
 
 	if (self->item)
 	{

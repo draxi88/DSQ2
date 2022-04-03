@@ -783,7 +783,6 @@ void Touch_Item (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf
 		//DSQ2
 		if (strcmp(ent->classname, "key_data_cd") == 0) {
 			other->client->pers.souls += ent->item->count_width;
-			gi.cprintf(other, PRINT_HIGH, "Got SOULS!?\n");
 			G_FreeEdict(ent);
 			return;
 		}
