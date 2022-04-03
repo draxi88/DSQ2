@@ -1788,24 +1788,12 @@ void teleporter_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_
 
 	if (!other->client)
 		return;
-	if (stricmp(self->owner->classname, "wep_tp") == 0) {
-		while ((spot = G_Find(spot, FOFS(classname), "wep_tp_dest")) != NULL)
-		{
-			if (spot->count == self->owner->count) {
-				dest = spot;
-				break;
-			}
-		}
+	dest = G_Find(NULL, FOFS(targetname), self->target);
+	if (!dest)
+	{
+		gi.dprintf("Couldn't find destination\n");
+		return;
 	}
-	else {
-		dest = G_Find(NULL, FOFS(targetname), self->target);
-		if (!dest)
-		{
-			gi.dprintf("Couldn't find destination\n");
-			return;
-		}
-	}
-
 	// unlink to make sure it can't possibly interfere with KillBox
 	gi.unlinkentity (other);
 

@@ -1,5 +1,8 @@
-# Quake2 in VS2015
+# Quake2 Dark Stroggs
 
-Just open `quake2.sln` in VS2015 and build the solution.
+Dark Souls style Quake 2.
+Killed stroggs drops a "soul", collect it and use it to upgrade weapons, etc.
+Can only be upgraded at spawn.
 
-You still need a copy of Quake 2 to run the game.
+Commands:
+"drink_health" - increase your health. 

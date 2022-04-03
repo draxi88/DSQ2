@@ -32,7 +32,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "p_menu.h"
 #include "dsq2.h"
 
-
 // the "gameversion" client command will print this plus compile date
 #define	GAMEVERSION	"baseq2"
 
@@ -852,10 +851,6 @@ typedef struct
 	int			max_health;
 	int			savedFlags;
 
-	//DSq2
-	unsigned int	health_flask;
-	unsigned int	souls;
-
 	int			selected_item;
 	int			inventory[MAX_ITEMS];
 
@@ -878,7 +873,19 @@ typedef struct
 
 	qboolean	spectator;			// client is a spectator
 
-	//DSQ2
+	//dsq2
+	short dmg_blaster;
+	short dmg_shotgun;
+	short dmg_sshotgun;
+	short dmg_bullet;
+	short dmg_grenade;
+	short dmg_rocket;
+	short dmg_hyperblaster;
+	short dmg_railgun;
+	short dmg_bfg;
+	unsigned int	souls;
+	unsigned int	max_flasks;
+
 	qboolean bonfire;
 
 } client_persistant_t;
@@ -893,16 +900,9 @@ typedef struct
 
 	qboolean	spectator;			// client is a spectator
 
-	//dsq2
-	short dmg_blaster;
-	short dmg_shotgun;
-	short dmg_sshotgun;
-	short dmg_bullet;
-	short dmg_grenade;
-	short dmg_rocket;
-	short dmg_hyperblaster;
-	short dmg_railgun;
-	short dmg_bfg;
+
+	//DSq2
+	unsigned int	health_flask;
 } client_respawn_t;
 
 // this structure is cleared on each PutClientInServer(),
