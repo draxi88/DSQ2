@@ -297,8 +297,8 @@ pmenu_t mainmenu[] = {
 	{ "*DARK STROGGS Quake II",					PMENU_ALIGN_CENTER, NULL },
 	{ NULL,                	PMENU_ALIGN_CENTER, NULL },
 	{ "Weapons->",			PMENU_ALIGN_LEFT, WeaponMenuOpen },
-	{ "Health",				PMENU_ALIGN_LEFT, DrinkHealth },
-	{ NULL,					PMENU_ALIGN_LEFT, NULL },
+	{ "Update health",				PMENU_ALIGN_LEFT, UpdateHealth },
+	{ "Update stamina",					PMENU_ALIGN_LEFT, UpdateStamina },
 	{ NULL,					PMENU_ALIGN_LEFT, NULL },
 	{ NULL,					PMENU_ALIGN_LEFT, NULL },
 	{ NULL,					PMENU_ALIGN_LEFT, NULL },
@@ -347,7 +347,8 @@ void MainMenuOpen(edict_t *ent)
 	PMenu_Close(ent);
 	PMenu_Open(ent, mainmenu, -1, sizeof(mainmenu) / sizeof(pmenu_t), NULL);
 	mainmenu[2].SelectFunc = WeaponMenuOpen;
-	mainmenu[3].SelectFunc = DrinkHealth;
+	mainmenu[3].SelectFunc = UpdateHealth;
+	mainmenu[4].SelectFunc = UpdateStamina;
 }
 
 void WeaponMenuOpen(edict_t *ent, pmenuhnd_t *p)

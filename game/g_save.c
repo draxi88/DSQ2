@@ -203,6 +203,7 @@ void InitGame (void)
 	// dm map list
 	sv_maplist = gi.cvar ("sv_maplist", "", 0);
 
+
 	// items
 	InitItems ();
 

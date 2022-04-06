@@ -648,12 +648,19 @@ void SpawnEntities (char *mapname, char *entities, char *spawnpoint)
 char *single_statusbar = 
 "yb	-24 "
 
-// health
+// stamina
+"if 20 "
+"xv -100 "
+"num 2 20 "
+"endif "
+
+// health flask
 "if 18 "
 "xv -56 "
 "num 2 18 "
 "endif "
 
+//health
 "xv	0 "
 "hnum "
 "xv	50 "

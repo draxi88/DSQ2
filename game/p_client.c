@@ -503,6 +503,11 @@ void player_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damag
 
 	VectorClear (self->avelocity);
 
+	//DSQ2
+	DS_Respawn(self);
+	return;
+
+
 	self->takedamage = DAMAGE_YES;
 	self->movetype = MOVETYPE_TOSS;
 
@@ -615,9 +620,8 @@ void InitClientPersistant (gclient_t *client)
 
 	client->pers.weapon = item;
 
-	client->pers.health			= 100;
-	client->pers.max_health		= 100;
-
+	client->pers.max_health = 100 + (client->pers.health_level * HEALTH_PLAYER);
+	client->pers.health			= client->pers.max_health;
 	client->pers.max_bullets	= 200;
 	client->pers.max_shells		= 100;
 	client->pers.max_rockets	= 50;
@@ -629,6 +633,8 @@ void InitClientPersistant (gclient_t *client)
 
 	//dsq2
 	client->pers.souls = 0;
+	client->pers.max_stamina = 10 + (client->pers.stamina_level * STAMINA_PLAYER);
+	client->pers.stamina = client->pers.max_stamina;
 	client->pers.dmg_blaster = 10;
 	client->pers.dmg_shotgun = 4;
 	client->pers.dmg_sshotgun = 6;
@@ -682,8 +688,9 @@ void SaveClientData (void)
 
 void FetchClientEntData (edict_t *ent)
 {
-	ent->health = ent->client->pers.health;
+	ent->health = ent->client->pers.max_health;
 	ent->max_health = ent->client->pers.max_health;
+	ent->client->pers.stamina = ent->client->pers.max_stamina;
 	ent->flags |= ent->client->pers.savedFlags;
 	if (coop->value)
 		ent->client->resp.score = ent->client->pers.score;
@@ -1015,8 +1022,7 @@ void respawn (edict_t *self)
 	}
 
 	// restart the entire server
-	//gi.AddCommandString ("menu_loadgame\n");
-	
+	//gi.AddCommandString ("menu_loadgame\n");	
 }
 
 /* 
@@ -1442,6 +1448,17 @@ void ClientUserinfoChanged (edict_t *ent, char *userinfo)
 		ent->client->pers.hand = atoi(s);
 	}
 
+	s = Info_ValueForKey(userinfo, "cl_run");
+	if (strlen(s))
+	{
+		ent->client->pers.run = atoi(s);
+		if (ent->client->pers.run)
+			ent->client->pers.startrun = level.time;
+		else
+			ent->client->pers.stoprun = level.time;
+	}
+
+
 	// save off the userinfo in case we want to check something later
 	strncpy (ent->client->pers.userinfo, userinfo, sizeof(ent->client->pers.userinfo)-1);
 }
@@ -1469,7 +1486,7 @@ qboolean ClientConnect (edict_t *ent, char *userinfo)
 		Info_SetValueForKey(userinfo, "rejmsg", "Banned.");
 		return false;
 	}
-
+	
 	// check for a spectator
 	value = Info_ValueForKey (userinfo, "spectator");
 	if (deathmatch->value && *value && strcmp(value, "0")) {
@@ -1591,6 +1608,13 @@ void PrintPmove (pmove_t *pm)
 	Com_Printf ("sv %3i:%i %i\n", pm->cmd.impulse, c1, c2);
 }
 
+void StuffRun(edict_t *ent) {
+	gi.WriteByte(svc_stufftext);
+	gi.WriteString("set cl_run 0 u\n");
+	gi.unicast(ent, true);
+	gi.dprintf("stuffed\n");
+}
+
 /*
 ==============
 ClientThink
@@ -1605,9 +1629,26 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 	edict_t	*other;
 	int		i, j;
 	pmove_t	pm;
+	vec3_t temp;
 
 	level.current_entity = ent;
 	client = ent->client;
+	//DSQ2
+	VectorCopy(ent->velocity, temp);
+	temp[2] = 0;
+	if (VectorNormalize(temp) > 200) { //speed
+		client->pers.stamina -= 0.01;
+		if(client->pers.stamina <= 0)
+			VectorScale(ent->velocity, 0.9, ent->velocity);
+	}
+	else {
+		if (client->pers.stamina < 0)
+			client->pers.stamina = 0;
+		else if (client->pers.stamina < client->pers.max_stamina)
+			client->pers.stamina += 0.01;
+		else if (client->pers.stamina > client->pers.max_stamina)
+			client->pers.stamina = client->pers.max_stamina;
+	}
 
 	if (level.intermissiontime)
 	{
@@ -1618,7 +1659,7 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 			level.exitintermission = true;
 		return;
 	}
-	client->pers.bonfire = false;
+	client->pers.bonfire = false; //DSQ2
 	pm_passent = ent;
 
 	if (ent->client->chase_target) {

@@ -33,7 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "dsq2.h"
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"baseq2"
+#define	GAMEVERSION	"DSq2"
 
 // protocol bytes that can be directly added to messages
 #define	svc_muzzleflash		1
@@ -885,8 +885,15 @@ typedef struct
 	short dmg_bfg;
 	unsigned int	souls;
 	unsigned int	max_flasks;
-
+	unsigned int	health_level;
 	qboolean bonfire;
+	int run;
+	float stamina;
+	float max_stamina;
+	unsigned int stamina_level;
+	float startrun;
+	float stoprun;
+	qboolean stuffed;
 
 } client_persistant_t;
 

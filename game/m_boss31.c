@@ -725,7 +725,7 @@ void SP_monster_jorg (edict_t *self)
 	VectorSet (self->mins, -80, -80, 0);
 	VectorSet (self->maxs, 80, 80, 140);
 
-	self->health = 3000;
+	self->health = HEALTH_M_BOSS31;
 	self->gib_health = -2000;
 	self->mass = 1000;
 

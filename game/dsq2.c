@@ -11,7 +11,36 @@ void DrinkHealth(edict_t *ent) {
 	ent->client->resp.health_flask--;
 }
 
-#define WeaponLevel 1000
+void UpdateHealth(edict_t *ent) {
+	if (ent->client->pers.souls >= (ent->client->pers.health_level*WeaponLevel) + WeaponLevel) {
+		//upgrade
+		ent->client->pers.max_health += HEALTH_PLAYER;
+		ent->client->pers.souls -= (ent->client->pers.health_level*WeaponLevel) + WeaponLevel;
+		ent->client->pers.health_level++;
+	}
+	else {
+		gi.cprintf(ent, PRINT_HIGH, "Could not upgrade health. Not enough stroggpoints\n");
+		return;
+	}
+	gi.cprintf(ent, PRINT_HIGH, "Health updated.\n");
+	ent->health = ent->client->pers.max_health;
+}
+
+void UpdateStamina(edict_t *ent) {
+	if (ent->client->pers.souls >= (ent->client->pers.stamina_level*WeaponLevel) + WeaponLevel) {
+		//upgrade
+		ent->client->pers.max_stamina += STAMINA_PLAYER;
+		ent->client->pers.souls -= (ent->client->pers.stamina_level*WeaponLevel) + WeaponLevel;
+		ent->client->pers.stamina_level++;
+	}
+	else {
+		gi.cprintf(ent, PRINT_HIGH, "Could not upgrade stamina. Not enough stroggpoints\n");
+		return;
+	}
+	gi.cprintf(ent, PRINT_HIGH, "Stamina updated.\n");
+	ent->client->pers.stamina = ent->client->pers.max_stamina;
+}
+
 void UpgradeWeapon(edict_t *ent, pmenuhnd_t *hnd) {
 	gitem_t *it;
 	int i;
@@ -36,6 +65,7 @@ void UpgradeWeapon(edict_t *ent, pmenuhnd_t *hnd) {
 	PMenu_Close(ent);
 	//PMenu_Open(ent, weaponmenu, -1, sizeof(weaponmenu) / sizeof(pmenu_t), NULL);
 }
+
 
 void GetMonsters(edict_t *ent) {
 	edict_t *monster;
@@ -85,4 +115,35 @@ void SpawnMonsters(edict_t *ent) {
 			continue;
 		spawner(i);
 	}
+}
+
+void DS_Respawn(edict_t *ent) {
+	gitem_t *soul;
+	edict_t *soul_ent;
+	
+	//remove all souls.
+	for (int i = 0; i < globals.num_edicts; i++) {
+		soul_ent = &g_edicts[i];
+		if (!soul_ent->inuse)
+			continue;
+		if (!strstr(soul_ent->classname, "key_data_cd"))
+			continue;
+		G_FreeEdict(soul_ent);
+		//
+	}
+
+	//drop soul
+	soul = &itemlist[32];
+	soul->count_width = ent->client->pers.souls;
+	Drop_Item(ent, soul);
+	ent->client->pers.souls = 0;
+
+	PutClientInServer(ent);
+	gi.dprintf("Respawn angles: %s\n", vtos(ent->s.angles));
+	SpawnMonsters(ent);
+	ent->s.event = EV_PLAYER_TELEPORT;
+	// hold in place briefly
+	ent->client->ps.pmove.pm_flags = PMF_TIME_TELEPORT;
+	ent->client->ps.pmove.pm_time = 500;
+	ent->client->respawn_time = level.time;
 }
