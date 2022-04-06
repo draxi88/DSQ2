@@ -388,6 +388,9 @@ void G_SetStats (edict_t *ent)
 	ent->client->ps.stats[STAT_HEALTH_FLASK] = ent->client->resp.health_flask;
 	ent->client->ps.stats[STAT_SOULS] = ent->client->pers.souls;
 
+	//stamina
+	ent->client->ps.stats[STAT_STAMINA] = ent->client->pers.stamina;
+
 	//
 	// ammo
 	//

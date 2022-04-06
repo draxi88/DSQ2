@@ -822,7 +822,7 @@ void SP_monster_tank (edict_t *self)
 
 	if (strcmp(self->classname, "monster_tank_commander") == 0)
 	{
-		self->health = 1000;
+		self->health = HEALTH_M_TANK;
 		self->gib_health = -225;
 	}
 	else

@@ -742,7 +742,7 @@ void SP_monster_medic (edict_t *self)
 	VectorSet (self->mins, -24, -24, -24);
 	VectorSet (self->maxs, 24, 24, 32);
 
-	self->health = 300;
+	self->health = HEALTH_M_MEDIC;
 	self->gib_health = -130;
 	self->mass = 400;
 

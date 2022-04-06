@@ -655,7 +655,7 @@ void SP_monster_boss2 (edict_t *self)
 	VectorSet (self->mins, -56, -56, 0);
 	VectorSet (self->maxs, 56, 56, 80);
 
-	self->health = 2000;
+	self->health = HEALTH_M_BOSS2;
 	self->gib_health = -200;
 	self->mass = 1000;
 
