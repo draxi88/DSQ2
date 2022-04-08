@@ -66,6 +66,19 @@ void UpgradeWeapon(edict_t *ent, pmenuhnd_t *hnd) {
 	//PMenu_Open(ent, weaponmenu, -1, sizeof(weaponmenu) / sizeof(pmenu_t), NULL);
 }
 
+void DeleteItems(edict_t *ent) {
+	edict_t *item;
+	monsterCount = 0;
+	for (int i = 0; i < globals.num_edicts; i++) {
+		item = &g_edicts[i];
+		if (!item->inuse)
+			continue;
+		if (!strstr(item->classname, "armor_shard"))
+			continue;
+		gi.dprintf("%s deleted.\n", item->classname);
+		G_FreeEdict(item);
+	}
+}
 
 void GetMonsters(edict_t *ent) {
 	edict_t *monster;
@@ -79,7 +92,10 @@ void GetMonsters(edict_t *ent) {
 		strcpy(all_monsters[monsterCount].classname,monster->classname);
 		VectorCopy(monster->s.origin, all_monsters[monsterCount].origin);
 		VectorCopy(monster->s.angles, all_monsters[monsterCount].angles);
-		//gi.dprintf("%s found at %s.\n", all_monsters[monsterCount].classname, vtos(all_monsters[monsterCount].origin));
+		all_monsters[monsterCount].spawnflags = monster->spawnflags;
+		all_monsters[monsterCount].targetname = monster->targetname;
+		all_monsters[monsterCount].target = monster->target;
+		gi.dprintf("%s found at %s.\n", all_monsters[monsterCount].classname, vtos(all_monsters[monsterCount].origin));
 		monsterCount++;
 	}
 }
@@ -126,20 +142,19 @@ void DS_Respawn(edict_t *ent) {
 		soul_ent = &g_edicts[i];
 		if (!soul_ent->inuse)
 			continue;
-		if (!strstr(soul_ent->classname, "key_data_cd"))
+		if (!strstr(soul_ent->classname, "strogg_soul"))
 			continue;
 		G_FreeEdict(soul_ent);
 		//
 	}
 
 	//drop soul
-	soul = &itemlist[32];
+	soul = &itemlist[43];
 	soul->count_width = ent->client->pers.souls;
 	Drop_Item(ent, soul);
 	ent->client->pers.souls = 0;
 
 	PutClientInServer(ent);
-	gi.dprintf("Respawn angles: %s\n", vtos(ent->s.angles));
 	SpawnMonsters(ent);
 	ent->s.event = EV_PLAYER_TELEPORT;
 	// hold in place briefly

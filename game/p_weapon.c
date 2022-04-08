@@ -558,7 +558,7 @@ void weapon_grenade_fire (edict_t *ent, qboolean held)
 	if (it = FindItemByClassname("ammo_grenades")) {
 		damage += damage * it->level;
 	}
-	gi.cprintf(ent, PRINT_HIGH, "dmg: %i\n", damage);
+
 	radius = damage+40;
 	if (is_quad)
 		damage *= 4;

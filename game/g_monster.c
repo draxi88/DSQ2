@@ -515,7 +515,7 @@ void monster_death_use (edict_t *self)
 
 	//DSQ2
 	gitem_t *soul;
-	soul = &itemlist[32];
+	soul = &itemlist[42];
 	soul->count_width = self->max_health;
 	Drop_Item(self, soul);
 	//

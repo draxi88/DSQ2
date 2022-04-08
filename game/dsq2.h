@@ -51,7 +51,10 @@
 	typedef struct {
 		vec3_t		origin;
 		vec3_t		angles;
+		int			spawnflags;
 		char		classname[32];
+		char		*targetname;
+		char		*target;
 	} monsters_s;
 
 	monsters_s all_monsters[MAX_EDICTS];
@@ -70,3 +73,4 @@ void DS_Respawn(edict_t *ent);
 int monsterCount;
 void SpawnMonsters(edict_t *ent);
 void GetMonsters(edict_t *ent);
+void DeleteItems(edict_t *ent);

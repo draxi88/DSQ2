@@ -1383,7 +1383,9 @@ void ClientBegin (edict_t *ent)
 
 
 	//DSQ2
+	DeleteItems(ent);
 	GetMonsters(ent);
+	
 }
 
 /*
@@ -1636,7 +1638,7 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 	//DSQ2
 	VectorCopy(ent->velocity, temp);
 	temp[2] = 0;
-	if (VectorNormalize(temp) > 200) { //speed
+	if (VectorNormalize(temp) > 300) { //speed
 		client->pers.stamina -= 0.01;
 		if(client->pers.stamina <= 0)
 			VectorScale(ent->velocity, 0.9, ent->velocity);

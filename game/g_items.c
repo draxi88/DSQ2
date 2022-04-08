@@ -781,7 +781,7 @@ void Touch_Item (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf
 		other->client->bonus_alpha = 0.25;
 
 		//DSQ2
-		if (strcmp(ent->classname, "key_data_cd") == 0) {
+		if (strcmp(ent->classname, "strogg_soul") == 0 || strcmp(ent->classname, "player_soul")== 0) {
 			other->client->pers.souls += ent->item->count_width;
 			G_FreeEdict(ent);
 			return;
@@ -2125,6 +2125,46 @@ tank commander's head
 		NULL,
 		0,
 /* precache */ "items/s_health.wav items/n_health.wav items/l_health.wav items/m_health.wav"
+	},
+	{
+		"strogg_soul",
+		Pickup_Key,
+		NULL,
+		Drop_General,
+		NULL,
+		"items/pkup.wav",
+		"models/objects/gibs/skull/tris.md2", EF_ROTATE|EF_QUAD|EF_DOUBLE,
+		NULL,
+/*icon*/"w_blaster",
+		"Strogg Soul",
+		2,
+		0,
+		NULL,
+		IT_STAY_COOP | IT_KEY,
+		0,
+		NULL,
+		0,
+		/* precache */ ""
+	},
+	{
+		"player_soul",
+		Pickup_Key,
+		NULL,
+		Drop_General,
+		NULL,
+		"items/pkup.wav",
+		"models/objects/gibs/skull/tris.md2", EF_ROTATE | EF_QUAD,
+		NULL,
+/*icon*/"w_blaster",
+		"Player Soul",
+		2,
+		0,
+		NULL,
+		IT_STAY_COOP | IT_KEY,
+		0,
+		NULL,
+		0,
+		/* precache */ ""
 	},
 
 	// end of list marker
