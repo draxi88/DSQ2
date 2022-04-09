@@ -344,6 +344,7 @@ void MainMenuOpen(edict_t *ent)
 	G_FreeEdict(ent);
 	PutClientInServer(ent);
 	SpawnMonsters(ent);
+	RemoveSouls(ent);
 	PMenu_Close(ent);
 	PMenu_Open(ent, mainmenu, -1, sizeof(mainmenu) / sizeof(pmenu_t), NULL);
 	mainmenu[2].SelectFunc = WeaponMenuOpen;

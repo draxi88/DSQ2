@@ -72,6 +72,7 @@ void UpgradeWeapon(edict_t *ent, pmenuhnd_t *hnd);
 //Monsters
 void DS_Respawn(edict_t *ent);
 int monsterCount;
+void RemoveSouls(edict_t *ent);
 void SpawnMonsters(edict_t *ent);
 void GetMonsters();
 void DeleteItems(edict_t *ent);

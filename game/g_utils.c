@@ -139,7 +139,9 @@ edict_t *G_PickTarget (char *targetname)
 
 	if (!num_choices)
 	{
+#ifdef DEBUG
 		gi.dprintf("G_PickTarget: target %s not found\n", targetname);
+#endif
 		return NULL;
 	}
 

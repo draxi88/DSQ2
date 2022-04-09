@@ -145,20 +145,25 @@ void SpawnMonsters(edict_t *ent) {
 	}
 }
 
-void DS_Respawn(edict_t *ent) {
-	gitem_t *soul;
+void RemoveSouls(edict_t *ent) {
 	edict_t *soul_ent;
-	
+
 	//remove all souls.
 	for (int i = 0; i < globals.num_edicts; i++) {
 		soul_ent = &g_edicts[i];
 		if (!soul_ent->inuse)
 			continue;
-		if (!strstr(soul_ent->classname, "strogg_soul"))
+		if (strcmp(soul_ent->classname, "strogg_soul") != 0)
 			continue;
 		G_FreeEdict(soul_ent);
 		//
 	}
+}
+
+void DS_Respawn(edict_t *ent) {
+	gitem_t *soul;
+
+	RemoveSouls(ent);
 
 	//drop soul
 	soul = &itemlist[43];

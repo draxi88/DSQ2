@@ -645,7 +645,11 @@ void monster_start_go (edict_t *self)
 		self->goalentity = self->movetarget = G_PickTarget(self->target);
 		if (!self->movetarget)
 		{
+#ifdef DEBUG
 			gi.dprintf ("%s can't find target %s at %s\n", self->classname, self->target, vtos(self->s.origin));
+#endif
+			if(self->spawnflags == 2)
+				self->spawnflags = 0;
 			self->target = NULL;
 			self->monsterinfo.pausetime = 100000000;
 			self->monsterinfo.stand (self);
