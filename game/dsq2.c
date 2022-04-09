@@ -179,3 +179,21 @@ void DS_Respawn(edict_t *ent) {
 	ent->client->ps.pmove.pm_time = 300;
 	ent->client->respawn_time = level.time;
 }
+
+void SpawnSouls() {
+	//DSQ2
+	edict_t *ent;
+	gitem_t *soul;
+	soul = &itemlist[44];
+	ent = G_Spawn();
+
+	if (strcmp(level.mapname, "base1") == 0) {
+		VectorSet(ent->s.origin, -234, 1415, -75);
+		soul->count_width = 1000;
+		Drop_Item(ent, soul);
+		gi.dprintf("%s spawned at %s\n", soul->classname, vtos(ent->s.origin));
+	}
+	gi.linkentity(ent);
+
+	G_FreeEdict(ent);
+}

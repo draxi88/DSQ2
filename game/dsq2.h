@@ -76,3 +76,6 @@ void RemoveSouls(edict_t *ent);
 void SpawnMonsters(edict_t *ent);
 void GetMonsters();
 void DeleteItems(edict_t *ent);
+
+//spawn
+void SpawnSouls();

@@ -618,6 +618,7 @@ void SpawnEntities (char *mapname, char *entities, char *spawnpoint)
 
 	PlayerTrail_Init ();
 	GetMonsters();
+	SpawnSouls();
 }
 
 
