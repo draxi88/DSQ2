@@ -153,10 +153,8 @@ void RemoveSouls(edict_t *ent) {
 		soul_ent = &g_edicts[i];
 		if (!soul_ent->inuse)
 			continue;
-		if (strcmp(soul_ent->classname, "strogg_soul") != 0)
-			continue;
-		G_FreeEdict(soul_ent);
-		//
+		if (strcmp(soul_ent->classname, "strogg_soul") == 0 || strcmp(soul_ent->classname, "player_soul") == 0)
+			G_FreeEdict(soul_ent);
 	}
 }
 
