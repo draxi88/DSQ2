@@ -5,4 +5,4 @@ Killed stroggs drops a "soul", collect it and use it to upgrade weapons, etc.
 Can only be upgraded at spawn.
 
 Commands:
-"drink_health" - increase your health. 
+- "drink_health" - increase your health. 
