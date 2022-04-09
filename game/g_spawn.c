@@ -544,8 +544,10 @@ void SpawnEntities (char *mapname, char *entities, char *spawnpoint)
 	strncpy (game.spawnpoint, spawnpoint, sizeof(game.spawnpoint)-1);
 
 	// set client fields on player ents
-	for (i=0 ; i<game.maxclients ; i++)
-		g_edicts[i+1].client = game.clients + i;
+	for (i = 0; i < game.maxclients; i++) {
+		g_edicts[i + 1].client = game.clients + i;
+		g_edicts[i + 1].client->pers.last_bonfire = NULL; //DSQ2 Nullify last bonfire.
+	}
 
 	ent = NULL;
 	inhibit = 0;

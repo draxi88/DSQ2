@@ -887,6 +887,7 @@ typedef struct
 	unsigned int	max_flasks;
 	unsigned int	health_level;
 	qboolean bonfire;
+	edict_t *last_bonfire;
 	int run;
 	float stamina;
 	float max_stamina;
