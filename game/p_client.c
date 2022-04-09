@@ -903,7 +903,11 @@ void	SelectSpawnPoint (edict_t *ent, vec3_t origin, vec3_t angles)
 		spot = SelectDeathmatchSpawnPoint ();
 	else if (coop->value)
 		spot = SelectCoopSpawnPoint (ent);
-
+	
+	//DSQ2
+	if (ent->client->pers.last_bonfire != NULL) {
+		spot = ent->client->pers.last_bonfire;
+	}
 	// find a single player start spot
 	if (!spot)
 	{
@@ -1384,7 +1388,7 @@ void ClientBegin (edict_t *ent)
 
 
 	//DSQ2
-	DeleteItems(ent);	
+	DeleteItems(ent);
 }
 
 /*

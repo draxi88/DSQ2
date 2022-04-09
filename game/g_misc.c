@@ -1868,6 +1868,7 @@ void bonfire_touch(edict_t *self, edict_t *other, cplane_t *plane, csurface_t *s
 		return;
 
 	other->client->pers.bonfire = true;
+	other->client->pers.last_bonfire = self;
 }
 
 /*QUAKED misc_teleporter_dest (1 0 0) (-32 -32 -24) (32 32 -16)
