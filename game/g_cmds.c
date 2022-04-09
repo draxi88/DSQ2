@@ -166,6 +166,9 @@ void Cmd_Give_f (edict_t *ent)
 	int			i;
 	qboolean	give_all;
 	edict_t		*it_ent;
+#ifndef CHEATS
+	return;
+#endif
 
 	if (deathmatch->value && !sv_cheats->value)
 	{
@@ -317,7 +320,9 @@ argv(0) god
 void Cmd_God_f (edict_t *ent)
 {
 	char	*msg;
-
+#ifndef CHEATS
+	return;
+#endif
 	if (deathmatch->value && !sv_cheats->value)
 	{
 		gi.cprintf (ent, PRINT_HIGH, "You must run the server with '+set cheats 1' to enable this command.\n");
@@ -373,7 +378,9 @@ argv(0) noclip
 void Cmd_Noclip_f (edict_t *ent)
 {
 	char	*msg;
-
+#ifndef CHEATS
+	return;
+#endif
 	if (deathmatch->value && !sv_cheats->value)
 	{
 		gi.cprintf (ent, PRINT_HIGH, "You must run the server with '+set cheats 1' to enable this command.\n");

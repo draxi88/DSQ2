@@ -68,19 +68,18 @@ void UpgradeWeapon(edict_t *ent, pmenuhnd_t *hnd) {
 
 void DeleteItems(edict_t *ent) {
 	edict_t *item;
-	monsterCount = 0;
 	for (int i = 0; i < globals.num_edicts; i++) {
 		item = &g_edicts[i];
 		if (!item->inuse)
 			continue;
 		if (!strstr(item->classname, "armor_shard"))
 			continue;
-		gi.dprintf("%s deleted.\n", item->classname);
+		//gi.dprintf("%s deleted.\n", item->classname);
 		G_FreeEdict(item);
 	}
 }
 
-void GetMonsters(edict_t *ent) {
+void GetMonsters() {
 	edict_t *monster;
 	monsterCount = 0;
 	for (int i = 0; i < globals.num_edicts; i++) {
@@ -91,11 +90,19 @@ void GetMonsters(edict_t *ent) {
 			continue;
 		strcpy(all_monsters[monsterCount].classname,monster->classname);
 		VectorCopy(monster->s.origin, all_monsters[monsterCount].origin);
+		all_monsters[monsterCount].origin[2] += 5; //don't spawn in ground.
 		VectorCopy(monster->s.angles, all_monsters[monsterCount].angles);
 		all_monsters[monsterCount].spawnflags = monster->spawnflags;
 		all_monsters[monsterCount].targetname = monster->targetname;
 		all_monsters[monsterCount].target = monster->target;
-		gi.dprintf("%s found at %s.\n", all_monsters[monsterCount].classname, vtos(all_monsters[monsterCount].origin));
+#ifdef DEBUG
+		gi.dprintf("%-24s - sf: %i", monster->classname, monster->spawnflags);
+		if (monster->target)
+			gi.dprintf(" - target: %s", monster->target);
+		if (monster->targetname)
+			gi.dprintf(" - targetname: %s", monster->targetname);
+		gi.dprintf("\n");
+#endif
 		monsterCount++;
 	}
 }
@@ -108,7 +115,13 @@ void spawner(int i) {
 	newMonster->classname = all_monsters[i].classname;
 	VectorCopy(all_monsters[i].origin, newMonster->s.origin);
 	VectorCopy(all_monsters[i].angles, newMonster->s.angles);
+	newMonster->spawnflags = all_monsters[i].spawnflags;
+	newMonster->targetname = all_monsters[i].targetname;
+	newMonster->target = all_monsters[i].target;
 	ED_CallSpawn(newMonster);
+#ifdef DEBUG
+	gi.dprintf("name: %s - spawnflag: %i - target: %s  - targetname: %s\n", newMonster->classname, newMonster->spawnflags, newMonster->target, newMonster->targetname);
+#endif
 	gi.linkentity(newMonster);
 }
 
@@ -125,7 +138,6 @@ void SpawnMonsters(edict_t *ent) {
 		G_FreeEdict(monster);
 		//
 	}
-
 	for (int i = 0; i < monsterCount; i++) {
 		if (!strstr(all_monsters[i].classname, "monster_")) //shouldn't be possible.. but..
 			continue;
@@ -159,6 +171,6 @@ void DS_Respawn(edict_t *ent) {
 	ent->s.event = EV_PLAYER_TELEPORT;
 	// hold in place briefly
 	ent->client->ps.pmove.pm_flags = PMF_TIME_TELEPORT;
-	ent->client->ps.pmove.pm_time = 500;
+	ent->client->ps.pmove.pm_time = 300;
 	ent->client->respawn_time = level.time;
 }

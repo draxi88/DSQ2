@@ -297,9 +297,9 @@ pmenu_t mainmenu[] = {
 	{ "*DARK STROGGS Quake II",					PMENU_ALIGN_CENTER, NULL },
 	{ NULL,                	PMENU_ALIGN_CENTER, NULL },
 	{ "Weapons->",			PMENU_ALIGN_LEFT, WeaponMenuOpen },
+	{ "Armor->",					PMENU_ALIGN_LEFT, ArmorMenuOpen },
 	{ "Update health",				PMENU_ALIGN_LEFT, UpdateHealth },
 	{ "Update stamina",					PMENU_ALIGN_LEFT, UpdateStamina },
-	{ NULL,					PMENU_ALIGN_LEFT, NULL },
 	{ NULL,					PMENU_ALIGN_LEFT, NULL },
 	{ NULL,					PMENU_ALIGN_LEFT, NULL },
 	{ NULL,					PMENU_ALIGN_LEFT, NULL },
@@ -347,8 +347,9 @@ void MainMenuOpen(edict_t *ent)
 	PMenu_Close(ent);
 	PMenu_Open(ent, mainmenu, -1, sizeof(mainmenu) / sizeof(pmenu_t), NULL);
 	mainmenu[2].SelectFunc = WeaponMenuOpen;
-	mainmenu[3].SelectFunc = UpdateHealth;
-	mainmenu[4].SelectFunc = UpdateStamina;
+	mainmenu[3].SelectFunc = ArmorMenuOpen;
+	mainmenu[4].SelectFunc = UpdateHealth;
+	mainmenu[5].SelectFunc = UpdateStamina;
 }
 
 void WeaponMenuOpen(edict_t *ent, pmenuhnd_t *p)
@@ -374,6 +375,39 @@ void WeaponMenuOpen(edict_t *ent, pmenuhnd_t *p)
 			j++;
 		}
 	}
+	PMenu_Close(ent);
+	PMenu_Open(ent, weaponmenu, -1, sizeof(weaponmenu) / sizeof(pmenu_t), NULL);
+}
+
+void ArmorMenuOpen(edict_t *ent, pmenuhnd_t *p)
+{
+	gitem_t *it;
+	for (int i = 2; i <= 12; i++) {
+		weaponmenu[i].text = "";
+	}
+	int i = 2;
+	it = FindItem("Jacket Armor");
+	if (ent->client->pers.inventory[ITEM_INDEX(it)] != 0) {
+		sprintf(it->menuname, "%s (level %i)", it->pickup_name, it->level + 1);
+		weaponmenu[i].text = it->menuname;
+		weaponmenu[i].SelectFunc = UpgradeWeapon;
+		i++;
+	}
+	it = FindItem("Combat Armor");
+	if (ent->client->pers.inventory[ITEM_INDEX(it)] != 0) {
+		sprintf(it->menuname, "%s (level %i)", it->pickup_name, it->level + 1);
+		weaponmenu[i].text = it->menuname;
+		weaponmenu[i].SelectFunc = UpgradeWeapon;
+		i++;
+	}
+	it = FindItem("Body Armor");
+	if (ent->client->pers.inventory[ITEM_INDEX(it)] != 0) {
+		sprintf(it->menuname, "%s (level %i)", it->pickup_name, it->level + 1);
+		weaponmenu[i].text = it->menuname;
+		weaponmenu[i].SelectFunc = UpgradeWeapon;
+		i++;
+	}
+	
 	PMenu_Close(ent);
 	PMenu_Open(ent, weaponmenu, -1, sizeof(weaponmenu) / sizeof(pmenu_t), NULL);
 }

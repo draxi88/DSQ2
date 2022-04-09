@@ -504,6 +504,7 @@ void player_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damag
 	VectorClear (self->avelocity);
 
 	//DSQ2
+	gi.dprintf("respawn!\n");
 	DS_Respawn(self);
 	return;
 
@@ -1383,9 +1384,7 @@ void ClientBegin (edict_t *ent)
 
 
 	//DSQ2
-	DeleteItems(ent);
-	GetMonsters(ent);
-	
+	DeleteItems(ent);	
 }
 
 /*

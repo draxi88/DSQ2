@@ -420,6 +420,7 @@ void SV_CalcBlend (edict_t *ent)
 	int		contents;
 	vec3_t	vieworg;
 	int		remaining;
+	double blend;
 
 	ent->client->ps.blend[0] = ent->client->ps.blend[1] = 
 		ent->client->ps.blend[2] = ent->client->ps.blend[3] = 0;
@@ -471,6 +472,11 @@ void SV_CalcBlend (edict_t *ent)
 			gi.sound(ent, CHAN_ITEM, gi.soundindex("items/airout.wav"), 1, ATTN_NORM, 0);
 		if (remaining > 30 || (remaining & 4) )
 			SV_AddBlend (0.4, 1, 0.4, 0.04, ent->client->ps.blend);
+	}
+	else if (ent->client->respawn_time > level.time-3.0)
+	{
+		blend = ((ent->client->respawn_time + 3.0) - level.time) / 3;
+		SV_AddBlend(0.0, 0.0, 0.0, blend, ent->client->ps.blend);
 	}
 
 	// add for damage

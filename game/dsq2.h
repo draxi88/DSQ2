@@ -63,6 +63,7 @@
 //menu stuff
 void MainMenuOpen(edict_t *ent);
 void WeaponMenuOpen(edict_t *ent, pmenuhnd_t *p);
+void ArmorMenuOpen(edict_t *ent, pmenuhnd_t *p);
 void DrinkHealth(edict_t *ent);
 void UpdateHealth(edict_t *ent);
 void UpdateStamina(edict_t *ent);
@@ -72,5 +73,5 @@ void UpgradeWeapon(edict_t *ent, pmenuhnd_t *hnd);
 void DS_Respawn(edict_t *ent);
 int monsterCount;
 void SpawnMonsters(edict_t *ent);
-void GetMonsters(edict_t *ent);
+void GetMonsters();
 void DeleteItems(edict_t *ent);
