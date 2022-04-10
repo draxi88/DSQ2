@@ -1,4 +1,5 @@
 //DSq2
+#define DS_VERSION "Beta v0.2"
 
 //Weapons
 #define WeaponLevel 1000
@@ -70,7 +71,6 @@ void UpdateStamina(edict_t *ent);
 void UpgradeWeapon(edict_t *ent, pmenuhnd_t *hnd);
 
 //Monsters
-void DS_Respawn(edict_t *ent);
 int monsterCount;
 void RemoveSouls(edict_t *ent);
 void SpawnMonsters(edict_t *ent);
@@ -78,4 +78,6 @@ void GetMonsters();
 void DeleteItems(edict_t *ent);
 
 //spawn
+void FindBonfire(edict_t *ent);
+void DS_Respawn(edict_t *ent);
 void SpawnSouls();

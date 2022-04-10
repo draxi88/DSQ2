@@ -668,6 +668,12 @@ void AddPointToBounds (vec3_t v, vec3_t mins, vec3_t maxs)
 	}
 }
 
+int VectorDistance(vec3_t v1, vec3_t v2) {
+	vec3_t output;
+	VectorSubtract(v1, v2, output);
+	return VectorLength(output);
+}
+
 
 int VectorCompare (vec3_t v1, vec3_t v2)
 {

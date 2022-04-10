@@ -1783,7 +1783,6 @@ void SP_func_clock (edict_t *self)
 void teleporter_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf)
 {
 	edict_t		*dest;
-	edict_t		*spot;
 	int			i;
 
 	if (!other->client)
@@ -1867,7 +1866,6 @@ void bonfire_touch(edict_t *self, edict_t *other, cplane_t *plane, csurface_t *s
 	if (!other->client)
 		return;
 
-	other->client->pers.bonfire = true;
 	other->client->pers.last_bonfire = self;
 }
 

@@ -473,6 +473,10 @@ void SV_CalcBlend (edict_t *ent)
 		if (remaining > 30 || (remaining & 4) )
 			SV_AddBlend (0.4, 1, 0.4, 0.04, ent->client->ps.blend);
 	}
+	else if (ent->client->menu)
+	{
+		SV_AddBlend(0.5, 0.5, 0.5, 0.5, ent->client->ps.blend);
+	}
 	else if (ent->client->respawn_time > level.time-3.0)
 	{
 		blend = ((ent->client->respawn_time + 3.0) - level.time) / 3;
