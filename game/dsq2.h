@@ -78,4 +78,5 @@ void GetEntities();
 void DeleteItems(edict_t *ent);
 
 //spawn
+void FindBonfire(edict_t *ent);
 void SpawnSouls();

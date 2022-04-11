@@ -156,6 +156,21 @@ void RemoveSouls(edict_t *ent) {
 	}
 }
 
+void FindBonfire(edict_t *ent) {
+	vec3_t bonfire;
+	VectorCopy(ent->client->pers.last_bonfire->s.origin, bonfire);
+	bonfire[2] += 10;
+	for (int i = 0; i < 3; i++)
+	{
+		ent->client->ps.pmove.delta_angles[i] = ANGLE2SHORT(ent->client->pers.last_bonfire->s.angles[i] - ent->client->resp.cmd_angles[i]);
+	}
+
+	VectorClear(ent->s.angles);
+	VectorClear(ent->client->ps.viewangles);
+	VectorClear(ent->client->v_angle);
+	VectorCopy(bonfire, ent->s.origin);
+}
+
 void DS_Respawn(edict_t *ent) {
 	gitem_t *soul;
 
