@@ -343,7 +343,8 @@ void MainMenuOpen(edict_t *ent)
 		return;
 	}
 	FindBonfire(ent);
-	SpawnMonsters(ent);
+	FetchClientEntData(ent);
+	RespawnEntities(ent);
 	RemoveSouls(ent);
 	PMenu_Close(ent);
 	PMenu_Open(ent, mainmenu, -1, sizeof(mainmenu) / sizeof(pmenu_t), NULL);

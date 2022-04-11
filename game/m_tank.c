@@ -475,6 +475,7 @@ void tank_reattack_blaster (edict_t *self)
 					return;
 				}
 	self->monsterinfo.currentmove = &tank_move_attack_post_blast;
+	self->ammo_type = CELLS;
 }
 
 
@@ -645,6 +646,7 @@ void tank_refire_rocket (edict_t *self)
 					return;
 				}
 	self->monsterinfo.currentmove = &tank_move_attack_post_rocket;
+	self->ammo_type = ROCKETS;
 }
 
 void tank_doattack_rocket (edict_t *self)
@@ -853,4 +855,5 @@ void SP_monster_tank (edict_t *self)
 
 	if (strcmp(self->classname, "monster_tank_commander") == 0)
 		self->s.skinnum = 2;
+	self->ammo_type = ROCKETS;
 }

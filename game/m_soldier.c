@@ -1274,6 +1274,7 @@ void SP_monster_soldier (edict_t *self)
 	gi.soundindex ("soldier/solatck1.wav");
 
 	self->s.skinnum = 2;
+	self->ammo_type = SHELLS;
 	self->health = HEALTH_M_SOLDIER;
 	self->max_health = HEALTH_M_SOLDIER;
 	self->gib_health = -30;
@@ -1296,6 +1297,7 @@ void SP_monster_soldier_ss (edict_t *self)
 	gi.soundindex ("soldier/solatck3.wav");
 
 	self->s.skinnum = 4;
+	self->ammo_type = BULLETS;
 	self->health = HEALTH_M_SOLDIER_SS;
 	self->max_health = HEALTH_M_SOLDIER_SS;
 	self->gib_health = -30;

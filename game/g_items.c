@@ -781,8 +781,9 @@ void Touch_Item (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf
 		other->client->bonus_alpha = 0.25;
 
 		//DSQ2
-		if (strcmp(ent->classname, "strogg_soul") == 0 || strcmp(ent->classname, "player_soul") == 0 || strcmp(ent->classname, "spawned_soul") == 0) {
+		if (strcmp(ent->classname, "strogg_soul") == 0 || strcmp(ent->classname, "player_soul") == 0){
 			other->client->pers.souls += ent->item->count_width;
+			gi.sound(other, CHAN_ITEM, gi.soundindex(ent->item->pickup_sound), 1, ATTN_NORM, 0);
 			G_FreeEdict(ent);
 			return;
 		}
@@ -1827,10 +1828,10 @@ gives +1 to maximum health
 		NULL,
 		NULL,
 		"items/pkup.wav",
-		"models/objects/gibs/skull/tris.md2", EF_ROTATE | EF_QUAD | EF_DOUBLE,//"models/items/adrenal/tris.md2", EF_ROTATE,
+		"models/objects/gibs/skull/tris.md2", EF_ROTATE | EF_DOUBLE | EF_QUAD,//"models/items/adrenal/tris.md2", EF_ROTATE,
 		NULL,
-/* icon */		"i_fixme", //"p_adrenaline",
-/* pickup */	"Soul of a fallen comrade",//"Adrenaline",
+/* icon */		"i_fixme"//"p_adrenaline",
+/* pickup */	"Soul of a fallen comrade",
 /* width */		2,
 		60,
 		NULL,
@@ -2175,16 +2176,16 @@ tank commander's head
 		"items/pkup.wav",
 		"models/objects/gibs/skull/tris.md2", EF_ROTATE | EF_QUAD | EF_DOUBLE,
 		NULL,
-/*icon*/"i_health",
-		"Soul of a fallen soldier",
-		2,
-		0,
-		NULL,
-		IT_STAY_COOP | IT_KEY,
-		0,
+/* icon */		"i_fixme",
+/* pickup */	"Soul of a fallen soldier",
+/* width */		2,
+		60,
 		NULL,
 		0,
-		/* precache */ ""
+		0,
+		NULL,
+		0,
+/* precache */ ""
 	},
 
 	// end of list marker

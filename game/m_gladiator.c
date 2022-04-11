@@ -385,4 +385,5 @@ void SP_monster_gladiator (edict_t *self)
 	self->monsterinfo.scale = MODEL_SCALE;
 
 	walkmonster_start (self);
+	self->ammo_type = SLUGS;
 }

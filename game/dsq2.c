@@ -79,22 +79,22 @@ void DeleteItems(edict_t *ent) {
 	}
 }
 
-void GetMonsters() {
-	edict_t *monster;
-	monsterCount = 0;
+void GetEntities() {
+	edict_t *ent;
+	entCount = 0;
 	for (int i = 0; i < globals.num_edicts; i++) {
-		monster = &g_edicts[i];
-		if (!monster->inuse)
+		ent = &g_edicts[i];
+		if (!ent->inuse)
 			continue;
-		if (!strstr(monster->classname, "monster_"))
+		if (!strstr(ent->classname, "monster_"))
 			continue;
-		strcpy(all_monsters[monsterCount].classname,monster->classname);
-		VectorCopy(monster->s.origin, all_monsters[monsterCount].origin);
-		all_monsters[monsterCount].origin[2] += 5; //don't spawn in ground.
-		VectorCopy(monster->s.angles, all_monsters[monsterCount].angles);
-		all_monsters[monsterCount].spawnflags = monster->spawnflags;
-		all_monsters[monsterCount].targetname = monster->targetname;
-		all_monsters[monsterCount].target = monster->target;
+		strcpy(all_entities[entCount].classname, ent->classname);
+		VectorCopy(ent->s.origin, all_entities[entCount].origin);
+		all_entities[entCount].origin[2] += 5; //don't spawn in ground.
+		VectorCopy(ent->s.angles, all_entities[entCount].angles);
+		all_entities[entCount].spawnflags = ent->spawnflags;
+		all_entities[entCount].targetname = ent->targetname;
+		all_entities[entCount].target = ent->target;
 #ifdef DEBUG
 		gi.dprintf("%-24s - sf: %i", monster->classname, monster->spawnflags);
 		if (monster->target)
@@ -103,43 +103,41 @@ void GetMonsters() {
 			gi.dprintf(" - targetname: %s", monster->targetname);
 		gi.dprintf("\n");
 #endif
-		monsterCount++;
+		entCount++;
 	}
 }
 
 
 void spawner(int i) {
-	edict_t *newMonster;
+	edict_t *newEnt;
 
-	newMonster = G_Spawn();
-	newMonster->classname = all_monsters[i].classname;
-	VectorCopy(all_monsters[i].origin, newMonster->s.origin);
-	VectorCopy(all_monsters[i].angles, newMonster->s.angles);
-	newMonster->spawnflags = all_monsters[i].spawnflags;
-	newMonster->targetname = all_monsters[i].targetname;
-	newMonster->target = all_monsters[i].target;
-	ED_CallSpawn(newMonster);
-#ifdef DEBUG
-	gi.dprintf("name: %s - spawnflag: %i - target: %s  - targetname: %s\n", newMonster->classname, newMonster->spawnflags, newMonster->target, newMonster->targetname);
-#endif
-	gi.linkentity(newMonster);
+	newEnt = G_Spawn();
+	newEnt->classname = all_entities[i].classname;
+	VectorCopy(all_entities[i].origin, newEnt->s.origin);
+	VectorCopy(all_entities[i].angles, newEnt->s.angles);
+	newEnt->spawnflags = all_entities[i].spawnflags;
+	newEnt->targetname = all_entities[i].targetname;
+	newEnt->target = all_entities[i].target;
+	ED_CallSpawn(newEnt);
+	//gi.dprintf("name: %s - spawnflag: %i - target: %s  - targetname: %s\n", newEnt->classname, newEnt->spawnflags, newEnt->target, newEnt->targetname);
+	gi.linkentity(newEnt);
 }
 
-void SpawnMonsters(edict_t *ent) {
-	edict_t *monster;
+void RespawnEntities(edict_t *ent) {
+	edict_t *oldent;
 
 	//delete old monsters;
 	for (int i = 0; i < globals.num_edicts; i++) {
-		monster = &g_edicts[i];
-		if (!monster->inuse)
+		oldent = &g_edicts[i];
+		if (!oldent->inuse)
 			continue;
-		if (!strstr(monster->classname, "monster_"))
+		if (!strstr(oldent->classname, "monster_"))
 			continue;
-		G_FreeEdict(monster);
+		G_FreeEdict(oldent);
 		//
 	}
-	for (int i = 0; i < monsterCount; i++) {
-		if (!strstr(all_monsters[i].classname, "monster_")) //shouldn't be possible.. but..
+	for (int i = 0; i < entCount; i++) {
+		if (!strstr(all_entities[i].classname, "monster_"))
 			continue;
 		spawner(i);
 	}
@@ -180,14 +178,14 @@ void DS_Respawn(edict_t *ent) {
 
 	//drop soul
 	if (ent->client->pers.souls) {
-		soul = &itemlist[43];
+		soul = FindItemByClassname("player_soul");//&itemlist[43];
 		soul->count_width = ent->client->pers.souls;
 		Drop_Item(ent, soul);
 	}
 	ent->client->pers.souls = 0;
 	PutClientInServer(ent);
 	FindBonfire(ent);
-	SpawnMonsters(ent);
+	RespawnEntities(ent);
 	ent->s.event = EV_PLAYER_TELEPORT;
 	// hold in place briefly
 	ent->client->ps.pmove.pm_flags = PMF_TIME_TELEPORT;
@@ -199,7 +197,7 @@ void SpawnSouls() {
 	//DSQ2
 	edict_t *ent;
 	gitem_t *soul;
-	soul = &itemlist[44];
+	soul = FindItemByClassname("spawned_soul");
 	ent = G_Spawn();
 
 	if (strcmp(level.mapname, "base1") == 0) {

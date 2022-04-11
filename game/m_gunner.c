@@ -552,10 +552,14 @@ void gunner_attack(edict_t *self)
 	}
 	else
 	{
-		if (random() <= 0.5)
+		if (random() <= 0.5) {
 			self->monsterinfo.currentmove = &gunner_move_attack_grenade;
-		else
+			self->ammo_type = GRENADES;
+		}
+		else {
 			self->monsterinfo.currentmove = &gunner_move_attack_chain;
+			self->ammo_type = BULLETS;
+		}
 	}
 }
 
@@ -626,4 +630,5 @@ void SP_monster_gunner (edict_t *self)
 	self->monsterinfo.scale = MODEL_SCALE;
 
 	walkmonster_start (self);
+	self->ammo_type = GRENADES;
 }

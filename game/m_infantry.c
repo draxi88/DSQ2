@@ -605,4 +605,5 @@ void SP_monster_infantry (edict_t *self)
 	self->monsterinfo.scale = MODEL_SCALE;
 
 	walkmonster_start (self);
+	self->ammo_type = BULLETS;
 }

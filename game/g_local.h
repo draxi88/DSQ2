@@ -1005,6 +1005,14 @@ struct gclient_s
 	qboolean	update_chase;		// need to update chase info?
 };
 
+typedef enum {
+	SHELLS,
+	BULLETS,
+	GRENADES,
+	ROCKETS,
+	CELLS,
+	SLUGS
+} ammo_type_t;
 
 struct edict_s
 {
@@ -1153,5 +1161,5 @@ struct edict_s
 	// common data blocks
 	moveinfo_t		moveinfo;
 	monsterinfo_t	monsterinfo;
-
+	ammo_type_t		ammo_type;
 };
