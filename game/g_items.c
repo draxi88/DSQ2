@@ -1830,7 +1830,7 @@ gives +1 to maximum health
 		"items/pkup.wav",
 		"models/objects/gibs/skull/tris.md2", EF_ROTATE | EF_DOUBLE | EF_QUAD,//"models/items/adrenal/tris.md2", EF_ROTATE,
 		NULL,
-/* icon */		"i_fixme"//"p_adrenaline",
+/* icon */		"i_fixme",//"p_adrenaline",
 /* pickup */	"Soul of a fallen comrade",
 /* width */		2,
 		60,
