@@ -504,7 +504,6 @@ void player_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damag
 	VectorClear (self->avelocity);
 
 	//DSQ2
-	gi.dprintf("respawn!\n");
 	DS_Respawn(self);
 	return;
 
@@ -1248,7 +1247,6 @@ void PutClientInServer (edict_t *ent)
 	VectorCopy (spawn_origin, ent->s.origin);
 	ent->s.origin[2] += 1;	// make sure off ground
 	VectorCopy (ent->s.origin, ent->s.old_origin);
-
 	// set the delta angle
 	for (i=0 ; i<3 ; i++)
 	{
@@ -1285,7 +1283,6 @@ void PutClientInServer (edict_t *ent)
 	// force the current weapon up
 	client->newweapon = client->pers.weapon;
 	ChangeWeapon (ent);
-
 }
 
 /*
@@ -1666,7 +1663,6 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 			level.exitintermission = true;
 		return;
 	}
-	client->pers.bonfire = false; //DSQ2
 	pm_passent = ent;
 
 	if (ent->client->chase_target) {
@@ -1827,6 +1823,14 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 		gi.unicast(ent, true);
 		client->menutime = level.time;
 		client->menudirty = false;
+	}
+
+	//DSQ2 Close Menu if not at bonfire
+	if (client->menu) {
+		int distance = VectorDistance(ent->client->pers.last_bonfire->s.origin, ent->s.origin);
+		if (distance > 70) {
+			PMenu_Close(ent);
+		}
 	}
 }
 

@@ -183,7 +183,6 @@ void DS_Respawn(edict_t *ent) {
 		Drop_Item(ent, soul);
 	}
 	ent->client->pers.souls = 0;
-
 	PutClientInServer(ent);
 	FindBonfire(ent);
 	RespawnEntities(ent);

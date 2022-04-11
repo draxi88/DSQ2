@@ -311,7 +311,7 @@ pmenu_t mainmenu[] = {
 	{ NULL,					PMENU_ALIGN_LEFT, NULL },
 	{ NULL,					PMENU_ALIGN_LEFT, NULL },
 	{ NULL,					PMENU_ALIGN_LEFT, NULL },
-	{ NULL,					PMENU_ALIGN_RIGHT, NULL },
+	{ DS_VERSION,					PMENU_ALIGN_RIGHT, NULL },
 };
 
 pmenu_t weaponmenu[] = {
@@ -332,12 +332,13 @@ pmenu_t weaponmenu[] = {
 	{ NULL,					PMENU_ALIGN_LEFT, NULL },
 	{ NULL,					PMENU_ALIGN_LEFT, NULL },
 	{ NULL,					PMENU_ALIGN_LEFT, NULL },
-	{ NULL,					PMENU_ALIGN_RIGHT, NULL },
+	{ DS_VERSION,					PMENU_ALIGN_RIGHT, NULL },
 };
-
+ 
 void MainMenuOpen(edict_t *ent)
 {
-	if (!ent->client->pers.bonfire) {
+	int distance = VectorDistance(ent->client->pers.last_bonfire->s.origin, ent->s.origin);
+	if (distance > 70) {
 		gi.cprintf(ent, PRINT_HIGH, "Not at a bonfire!\n");
 		return;
 	}
