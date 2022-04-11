@@ -691,7 +691,10 @@ void FetchClientEntData (edict_t *ent)
 {
 	ent->health = ent->client->pers.max_health;
 	ent->max_health = ent->client->pers.max_health;
+	//DSQ2
+	ent->client->resp.health_flask = ent->client->pers.max_flasks;
 	ent->client->pers.stamina = ent->client->pers.max_stamina;
+	//
 	ent->flags |= ent->client->pers.savedFlags;
 	if (coop->value)
 		ent->client->resp.score = ent->client->pers.score;
@@ -1281,7 +1284,6 @@ void PutClientInServer (edict_t *ent)
 
 	// force the current weapon up
 	client->newweapon = client->pers.weapon;
-	client->resp.health_flask = client->pers.max_flasks;
 	ChangeWeapon (ent);
 
 }

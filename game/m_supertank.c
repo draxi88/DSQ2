@@ -515,6 +515,7 @@ void supertankRocket (edict_t *self)
 	VectorNormalize (dir);
 
 	monster_fire_rocket (self, start, dir, 50, 500, flash_number);
+	self->ammo_type = ROCKETS;
 }	
 
 void supertankMachineGun (edict_t *self)
@@ -545,6 +546,7 @@ void supertankMachineGun (edict_t *self)
   }
 
 	monster_fire_bullet (self, start, forward, 6, 4, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, flash_number);
+	self->ammo_type = BULLETS;
 }	
 
 
@@ -714,4 +716,5 @@ void SP_monster_supertank (edict_t *self)
 	self->monsterinfo.scale = MODEL_SCALE;
 
 	walkmonster_start(self);
+	self->ammo_type = BULLETS;
 }

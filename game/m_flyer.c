@@ -623,4 +623,5 @@ void SP_monster_flyer (edict_t *self)
 	self->monsterinfo.scale = MODEL_SCALE;
 
 	flymonster_start (self);
+	self->ammo_type = CELLS;
 }

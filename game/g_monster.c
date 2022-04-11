@@ -513,9 +513,10 @@ void monster_death_use (edict_t *self)
 	self->flags &= ~(FL_FLY|FL_SWIM);
 	self->monsterinfo.aiflags &= AI_GOOD_GUY;
 
+	
 	//DSQ2
 	gitem_t *soul;
-	soul = &itemlist[42];
+	soul = FindItemByClassname("strogg_soul");
 	soul->count_width = self->max_health;
 	Drop_Item(self, soul);
 	//
@@ -524,6 +525,33 @@ void monster_death_use (edict_t *self)
 	{
 		Drop_Item (self, self->item);
 		self->item = NULL;
+	}
+	else {
+		if (random() > 0.5) {
+			gitem_t *ammo;
+			switch (self->ammo_type) {
+			case BULLETS:
+				ammo = FindItemByClassname("ammo_bullets");
+				break;
+			case SHELLS:
+				ammo = FindItemByClassname("ammo_shells");
+				break;
+			case GRENADES:
+				ammo = FindItemByClassname("ammo_grenades");
+				break;
+			case ROCKETS:
+				ammo = FindItemByClassname("ammo_rockets");
+				break;
+			case SLUGS:
+				ammo = FindItemByClassname("ammo_rockets");
+				break;
+			case CELLS:
+				ammo = FindItemByClassname("ammo_cells");
+				break;
+			}
+			ammo->quantity = random() * 10;
+			Drop_Item(self, ammo);
+		}
 	}
 
 	if (self->deathtarget)

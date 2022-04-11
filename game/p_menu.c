@@ -341,9 +341,9 @@ void MainMenuOpen(edict_t *ent)
 		gi.cprintf(ent, PRINT_HIGH, "Not at a bonfire!\n");
 		return;
 	}
-	G_FreeEdict(ent);
-	PutClientInServer(ent);
-	SpawnMonsters(ent);
+	FindBonfire(ent);
+	FetchClientEntData(ent);
+	RespawnEntities(ent);
 	RemoveSouls(ent);
 	PMenu_Close(ent);
 	PMenu_Open(ent, mainmenu, -1, sizeof(mainmenu) / sizeof(pmenu_t), NULL);

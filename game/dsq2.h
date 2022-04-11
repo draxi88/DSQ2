@@ -45,8 +45,8 @@
 #define DMG_BFG			ent->client->pers.dmg_bfg
 
 
-#ifndef MONSTER_SET
-#define MONSTER_SET
+#ifndef ENTITY_SET
+#define ENTITY_SET
 
 	typedef struct {
 		vec3_t		origin;
@@ -55,10 +55,11 @@
 		char		classname[32];
 		char		*targetname;
 		char		*target;
-	} monsters_s;
+	} entity_s;
 
-	monsters_s all_monsters[MAX_EDICTS];
-#endif // !MONSTER_SET
+	entity_s all_entities[MAX_EDICTS];
+#endif // !ITEM_SET
+
 
 //menu stuff
 void MainMenuOpen(edict_t *ent);
@@ -69,12 +70,11 @@ void UpdateHealth(edict_t *ent);
 void UpdateStamina(edict_t *ent);
 void UpgradeWeapon(edict_t *ent, pmenuhnd_t *hnd);
 
-//Monsters
-void DS_Respawn(edict_t *ent);
-int monsterCount;
+//Entities
+int entCount;
 void RemoveSouls(edict_t *ent);
-void SpawnMonsters(edict_t *ent);
-void GetMonsters();
+void RespawnEntities(edict_t *ent);
+void GetEntities();
 void DeleteItems(edict_t *ent);
 
 //spawn
