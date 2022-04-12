@@ -1025,7 +1025,10 @@ void ClientCommand (edict_t *ent)
 		DrinkHealth(ent);
 	}
 	else if (Q_stricmp(cmd, "getsouls") == 0) {
-		ent->client->pers.souls += 1000;
+		if(atoi(gi.argv(1)) > 0)
+			ent->client->pers.souls += atoi(gi.argv(1));
+		else
+			ent->client->pers.souls += 1000;
 	}
 	else	// anything that doesn't match a command will be a chat
 		Cmd_Say_f (ent, false, true);

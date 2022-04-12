@@ -267,6 +267,7 @@ typedef struct gitem_s
 	//dsq2
 	int			level;
 	char		menuname[32];
+	int			dropcount;		// couldn't use quantity on the random drops. 
 } gitem_t;
 
 
@@ -1006,6 +1007,7 @@ struct gclient_s
 };
 
 typedef enum {
+	NONE,
 	SHELLS,
 	BULLETS,
 	GRENADES,

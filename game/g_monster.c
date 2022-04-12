@@ -527,7 +527,7 @@ void monster_death_use (edict_t *self)
 		self->item = NULL;
 	}
 	else {
-		if (random() > 0.5) {
+		if (self->ammo_type && random() > 0.5) {
 			gitem_t *ammo;
 			switch (self->ammo_type) {
 			case BULLETS:
@@ -549,8 +549,10 @@ void monster_death_use (edict_t *self)
 				ammo = FindItemByClassname("ammo_cells");
 				break;
 			}
-			ammo->quantity = random() * 10;
-			Drop_Item(self, ammo);
+			ammo->dropcount = random() * 6;
+			gi.dprintf("dropcount: %i\n", ammo->dropcount);
+			if(ammo->dropcount>0)
+				Drop_Item(self, ammo);
 		}
 	}
 
