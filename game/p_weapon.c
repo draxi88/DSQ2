@@ -556,7 +556,7 @@ void weapon_grenade_fire (edict_t *ent, qboolean held)
 	//DSQ2
 	gitem_t *it;
 	if (it = FindItemByClassname("ammo_grenades")) {
-		damage += damage * it->level;
+		damage += GrenadeLevel * it->level;
 	}
 
 	radius = damage+40;
@@ -720,6 +720,12 @@ void weapon_grenadelauncher_fire (edict_t *ent)
 	int		damage = DMG_GRENADE;
 	float	radius;
 
+	//DSQ2
+	gitem_t *it;
+	if (it = FindItemByClassname("ammo_grenades")) {
+		damage += GrenadeLevel * it->level;
+	}
+
 	radius = damage+40;
 	if (is_quad)
 		damage *= 4;
@@ -771,7 +777,14 @@ void Weapon_RocketLauncher_Fire (edict_t *ent)
 	int		radius_damage;
 
 	damage = DMG_ROCKET + (int)(random() * 20.0);
-	radius_damage = DMG_ROCKET+20;
+
+	//DSQ2
+	gitem_t *it;
+	if (it = FindItemByClassname("weapon_rocketlauncher")) {
+		damage += RocketLevel * it->level;
+	}
+
+	radius_damage = damage+20;
 	damage_radius = 120;
 	if (is_quad)
 	{
@@ -861,7 +874,7 @@ void Weapon_Blaster_Fire (edict_t *ent)
 	//DSQ2
 	gitem_t *it;
 	if (it = FindItemByClassname("weapon_blaster")) {
-		damage += damage * it->level;
+		damage += BlasterLevel * it->level;
 	}
 
 	Blaster_Fire (ent, vec3_origin, damage, false, EF_BLASTER);
@@ -919,7 +932,7 @@ void Weapon_HyperBlaster_Fire (edict_t *ent)
 			//DSQ2
 			gitem_t *it;
 			if (it = FindItemByClassname("weapon_hyperblaster")) {
-				damage += damage * it->level;
+				damage += HyperblasterLevel * it->level;
 			}
 
 			Blaster_Fire (ent, offset, damage, true, effect);
@@ -979,7 +992,7 @@ void Machinegun_Fire (edict_t *ent)
 	vec3_t		offset;
 	gitem_t *it;
 	if (it = FindItemByClassname("weapon_machinegun")) {
-		damage += damage * it->level;
+		damage += MachinegunLevel * it->level;
 	}
 
 	if (!(ent->client->buttons & BUTTON_ATTACK))
@@ -1083,7 +1096,7 @@ void Chaingun_Fire (edict_t *ent)
 		damage = DMG_BULLET;
 	gitem_t *it;
 	if (it = FindItemByClassname("weapon_chaingun")) {
-		damage += damage * it->level;
+		damage += ChaingunLevel * it->level;
 	}
 
 	if (ent->client->ps.gunframe == 5)
@@ -1218,7 +1231,7 @@ void weapon_shotgun_fire (edict_t *ent)
 	//DSQ2
 	gitem_t *it;
 	if (it = FindItemByClassname("weapon_shotgun")) {
-		damage += damage * it->level;
+		damage += ShotgunLevel * it->level;
 	}
 
 	if (ent->client->ps.gunframe == 9)
@@ -1278,7 +1291,7 @@ void weapon_supershotgun_fire (edict_t *ent)
 	int			kick = 12;
 	gitem_t *it;
 	if (it = FindItemByClassname("weapon_supershotgun")) {
-		damage += damage * it->level;
+		damage += SupershotgunLevel * it->level;
 	}
 	AngleVectors (ent->client->v_angle, forward, right, NULL);
 
@@ -1352,9 +1365,10 @@ void weapon_railgun_fire (edict_t *ent)
 		damage = DMG_RAILGUN;
 		kick = 250;
 	}
+
 	gitem_t *it;
 	if (it = FindItemByClassname("weapon_railgun")) {
-		damage += damage * it->level;
+		damage += RailgunLevel * it->level;
 	}
 
 	if (is_quad)
@@ -1416,7 +1430,7 @@ void weapon_bfg_fire (edict_t *ent)
 
 	gitem_t *it;
 	if (it = FindItemByClassname("weapon_bfg")) {
-		damage += damage * it->level;
+		damage += BFGLevel * it->level;
 	}
 
 	if (ent->client->ps.gunframe == 9)

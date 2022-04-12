@@ -2,11 +2,24 @@
 #define DS_VERSION "Beta v0.2"
 
 //Weapons
-#define WeaponLevel 1000
+#define BlasterLevel		2
+#define ShotgunLevel		2
+#define SupershotgunLevel	2
+#define MachinegunLevel		2
+#define ChaingunLevel		2
+#define GrenadeLevel		5
+#define RocketLevel			5
+#define HyperblasterLevel	2
+#define RailgunLevel		5
+#define BFGLevel			10
+
+int xplevel[99];
 
 //STATS PLAYER
-#define HEALTH_PLAYER 20
-#define STAMINA_PLAYER 5
+#define HEALTH_PLAYER_LEVEL 20
+#define HEALTH_PLAYER_START 100
+#define STAMINA_PLAYER_LEVEL 5
+#define STAMINA_PLAYER_START 5
 
 //HEALTH MONSTERS
 #define HEALTH_M_BERSERK 400
@@ -79,6 +92,8 @@ void GetEntities();
 void DeleteItems(edict_t *ent);
 
 //spawn
+void SP_misc_teleporter_dest(edict_t *self);
+void ED_CallSpawn(edict_t *ent);
 void FindBonfire(edict_t *ent);
 void DS_Respawn(edict_t *ent);
 void SpawnSouls();

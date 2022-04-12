@@ -1,5 +1,13 @@
 #include "g_local.h"
 #include "dsq2.h"
+xplevel[99] = { 500, 700, 1000, 1400, 1900, 2500, 3200, 4000, 4900, 5900, 7000, 8200, 9500, 
+10900, 12400, 14000, 15700, 17500, 19400, 21400, 23500, 25700, 28000, 30400, 32900, 35500, 
+38200, 41000, 43900, 46900, 50000, 53200, 56500, 59900, 63400, 67000, 70700, 74500, 78400, 82400, 
+86500, 90700, 95000, 99400, 103900, 108500, 113200, 118000, 122900, 127900, 133000, 138200, 143500, 
+148900, 154400, 160000, 165700, 171500, 177400, 183400, 189500, 195700, 202000, 208400, 214900, 221500, 
+228200, 235000, 241900, 248900, 256000, 263200, 270500, 277900, 285400, 293000, 300700, 308500, 316400, 
+324400, 332500, 340700, 349000, 357400, 365900, 374500, 383200, 392000, 400900, 409900, 419000, 428200, 
+437500, 446900, 456400, 466000, 475700, 485500, 495400 };
 
 
 void DrinkHealth(edict_t *ent) {
@@ -12,14 +20,14 @@ void DrinkHealth(edict_t *ent) {
 }
 
 void UpdateHealth(edict_t *ent) {
-	if (ent->client->pers.souls >= (ent->client->pers.health_level*WeaponLevel) + WeaponLevel) {
+	if (ent->client->pers.souls >= xplevel[ent->client->pers.health_level] && ent->client->pers.health_level < 99) {
 		//upgrade
-		ent->client->pers.max_health += HEALTH_PLAYER;
-		ent->client->pers.souls -= (ent->client->pers.health_level*WeaponLevel) + WeaponLevel;
+		ent->client->pers.max_health += HEALTH_PLAYER_LEVEL;
+		ent->client->pers.souls -= xplevel[ent->client->pers.health_level];
 		ent->client->pers.health_level++;
 	}
 	else {
-		gi.cprintf(ent, PRINT_HIGH, "Could not upgrade health. Not enough stroggpoints\n");
+		gi.cprintf(ent, PRINT_HIGH, "Could not upgrade health. %s\n", ent->client->pers.health_level < 99 ? "Not enough stroggpoints" : "Health is maxed!");
 		return;
 	}
 	ent->health = ent->client->pers.max_health;
@@ -28,14 +36,14 @@ void UpdateHealth(edict_t *ent) {
 }
 
 void UpdateStamina(edict_t *ent) {
-	if (ent->client->pers.souls >= (ent->client->pers.stamina_level*WeaponLevel) + WeaponLevel) {
+	if (ent->client->pers.souls >= xplevel[ent->client->pers.stamina_level] && ent->client->pers.stamina_level < 99) {
 		//upgrade
-		ent->client->pers.max_stamina += STAMINA_PLAYER;
-		ent->client->pers.souls -= (ent->client->pers.stamina_level*WeaponLevel) + WeaponLevel;
+		ent->client->pers.max_stamina += STAMINA_PLAYER_LEVEL;
+		ent->client->pers.souls -= xplevel[ent->client->pers.stamina_level];
 		ent->client->pers.stamina_level++;
 	}
 	else {
-		gi.cprintf(ent, PRINT_HIGH, "Could not upgrade stamina. Not enough stroggpoints\n");
+		gi.cprintf(ent, PRINT_HIGH, "Could not upgrade stamina. %s\n", ent->client->pers.stamina_level < 99 ? "Not enough stroggpoints" : "Stamina is maxed!");
 		return;
 	}
 	ent->client->pers.stamina = ent->client->pers.max_stamina;
@@ -49,15 +57,15 @@ void UpgradeWeapon(edict_t *ent, pmenuhnd_t *hnd) {
 	while (i < 18) {
 		if (ent->client->pers.inventory[i]) {
 			it = &itemlist[i];
-			if (ent->client->pers.souls >= (it->level*WeaponLevel) + WeaponLevel) {
+			if (ent->client->pers.souls >= xplevel[it->level] && it->level < 99) {
 				//upgrade
-				ent->client->pers.souls -= (it->level*WeaponLevel) + WeaponLevel;
+				ent->client->pers.souls -= xplevel[it->level];
 				it->level++;
 				gi.cprintf(ent, PRINT_HIGH, "%s updated.\n", it->classname);
 				break;
 			}
 			else {
-				gi.cprintf(ent, PRINT_HIGH, "Could not upgrade this weapon. Not enough stroggpoints\n");
+				gi.cprintf(ent, PRINT_HIGH, "Could not upgrade this weapon. %s\n", it->level < 99 ? "Not enough stroggpoints" : "Weapon is maxed!");
 				return;
 			}
 		}
@@ -69,6 +77,7 @@ void UpgradeWeapon(edict_t *ent, pmenuhnd_t *hnd) {
 
 void DeleteItems(edict_t *ent) {
 	edict_t *item;
+	(void)ent;
 	for (int i = 0; i < globals.num_edicts; i++) {
 		item = &g_edicts[i];
 		if (!item->inuse)
@@ -82,6 +91,7 @@ void DeleteItems(edict_t *ent) {
 
 void GetEntities() {
 	edict_t *ent;
+
 	entCount = 0;
 	for (int i = 0; i < globals.num_edicts; i++) {
 		ent = &g_edicts[i];
@@ -126,7 +136,7 @@ void spawner(int i) {
 
 void RespawnEntities(edict_t *ent) {
 	edict_t *oldent;
-
+	(void)ent;
 	//delete old monsters;
 	for (int i = 0; i < globals.num_edicts; i++) {
 		oldent = &g_edicts[i];
@@ -146,7 +156,7 @@ void RespawnEntities(edict_t *ent) {
 
 void RemoveSouls(edict_t *ent) {
 	edict_t *soul_ent;
-
+	(void)ent;
 	//remove all souls.
 	for (int i = 0; i < globals.num_edicts; i++) {
 		soul_ent = &g_edicts[i];
