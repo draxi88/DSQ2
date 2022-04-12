@@ -22,8 +22,9 @@ void UpdateHealth(edict_t *ent) {
 		gi.cprintf(ent, PRINT_HIGH, "Could not upgrade health. Not enough stroggpoints\n");
 		return;
 	}
-	gi.cprintf(ent, PRINT_HIGH, "Health updated.\n");
 	ent->health = ent->client->pers.max_health;
+
+	MainMenuOpen(ent);
 }
 
 void UpdateStamina(edict_t *ent) {
@@ -37,8 +38,8 @@ void UpdateStamina(edict_t *ent) {
 		gi.cprintf(ent, PRINT_HIGH, "Could not upgrade stamina. Not enough stroggpoints\n");
 		return;
 	}
-	gi.cprintf(ent, PRINT_HIGH, "Stamina updated.\n");
 	ent->client->pers.stamina = ent->client->pers.max_stamina;
+	MainMenuOpen(ent);
 }
 
 void UpgradeWeapon(edict_t *ent, pmenuhnd_t *hnd) {
@@ -53,17 +54,17 @@ void UpgradeWeapon(edict_t *ent, pmenuhnd_t *hnd) {
 				ent->client->pers.souls -= (it->level*WeaponLevel) + WeaponLevel;
 				it->level++;
 				gi.cprintf(ent, PRINT_HIGH, "%s updated.\n", it->classname);
+				break;
 			}
 			else {
 				gi.cprintf(ent, PRINT_HIGH, "Could not upgrade this weapon. Not enough stroggpoints\n");
+				return;
 			}
-			break;
 		}
 		i++;
 	}
 	//gi.cprintf(ent, PRINT_HIGH, "hnd->num:%i, hnd->cur:%i hnd->entries->text:%s\n",hnd->num, hnd->cur, hnd->entries->text);
-	PMenu_Close(ent);
-	//PMenu_Open(ent, weaponmenu, -1, sizeof(weaponmenu) / sizeof(pmenu_t), NULL);
+	WeaponMenuOpen(ent, hnd);
 }
 
 void DeleteItems(edict_t *ent) {

@@ -337,17 +337,29 @@ pmenu_t weaponmenu[] = {
  
 void MainMenuOpen(edict_t *ent)
 {
+	char health[32];
+	char stamina[32];
+	int selected;
+	if (ent->client->menu)
+		selected = ent->client->menu->cur;
+	else
+		selected = -1;
+
 	int distance = VectorDistance(ent->client->pers.last_bonfire->s.origin, ent->s.origin);
 	if (distance > 70) {
 		gi.cprintf(ent, PRINT_HIGH, "Not at a bonfire!\n");
 		return;
 	}
+	sprintf(health, "Update health: (%i)", ent->client->pers.max_health);
+	mainmenu[4].text = health;
+	sprintf(stamina, "Update stamina: (%.0f)", ent->client->pers.max_stamina);
+	mainmenu[5].text = stamina;
 	FindBonfire(ent);
 	FetchClientEntData(ent);
 	RespawnEntities(ent);
 	RemoveSouls(ent);
 	PMenu_Close(ent);
-	PMenu_Open(ent, mainmenu, -1, sizeof(mainmenu) / sizeof(pmenu_t), NULL);
+	PMenu_Open(ent, mainmenu, selected, sizeof(mainmenu) / sizeof(pmenu_t), NULL);
 	mainmenu[2].SelectFunc = WeaponMenuOpen;
 	mainmenu[3].SelectFunc = ArmorMenuOpen;
 	mainmenu[4].SelectFunc = UpdateHealth;
@@ -378,7 +390,7 @@ void WeaponMenuOpen(edict_t *ent, pmenuhnd_t *p)
 		}
 	}
 	PMenu_Close(ent);
-	PMenu_Open(ent, weaponmenu, -1, sizeof(weaponmenu) / sizeof(pmenu_t), NULL);
+	PMenu_Open(ent, weaponmenu, p->cur, sizeof(weaponmenu) / sizeof(pmenu_t), NULL);
 }
 
 void ArmorMenuOpen(edict_t *ent, pmenuhnd_t *p)

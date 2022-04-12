@@ -495,6 +495,8 @@ qboolean Pickup_Ammo (edict_t *ent, edict_t *other)
 		count = 1000;
 	else if (ent->count)
 		count = ent->count;
+	else if (ent->item->dropcount)
+		count = ent->item->dropcount;
 	else
 		count = ent->item->quantity;
 
@@ -786,6 +788,9 @@ void Touch_Item (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf
 			gi.sound(other, CHAN_ITEM, gi.soundindex(ent->item->pickup_sound), 1, ATTN_NORM, 0);
 			G_FreeEdict(ent);
 			return;
+		}
+		else if (strcmp(ent->classname, "spawned_soul") == 0) {
+			other->client->pers.souls += ent->item->count_width;
 		}
 
 		// show icon and name on status bar

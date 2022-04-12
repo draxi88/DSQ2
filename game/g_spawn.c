@@ -691,28 +691,28 @@ char *single_statusbar =
 
 // selected item
 "if 6 "
-"	xv	296 "
-"	pic 6 "
+	"xv	296 "
+	"pic 6 "
+"endif "
+
+// picked up item
+"if 7 "
+	"yb	-70 "
+	"xv	0 "
+	"pic 7 "
+	"xv 26 "
+	"yb -64 "
+	"stat_string 8 "
 "endif "
 
 "yb	-50 "
 
-// picked up item
-"if 7 "
-"	xv	0 "
-"	pic 7 "
-"	xv	26 "
-"	yb	-42 "
-"	stat_string 8 "
-"	yb	-50 "
-"endif "
-
 // timer
 "if 9 "
-"	xv	262 "
-"	num	2	10 "
-"	xv	296 "
-"	pic	9 "
+"xv	262 "
+"num 2 10 "
+"xv	296 "
+"pic 9 "
 "endif "
 
 //  help / weapon icon 
