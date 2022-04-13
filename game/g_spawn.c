@@ -686,8 +686,10 @@ char *single_statusbar =
 "	pic 4 "
 "endif "
 
-"xv 328 "
-"num 8 19"
+//soulpoints
+"xv 350 "
+"num 5 19 "
+
 
 // selected item
 "if 6 "

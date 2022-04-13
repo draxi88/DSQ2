@@ -500,6 +500,7 @@ qboolean Pickup_Ammo (edict_t *ent, edict_t *other)
 	else
 		count = ent->item->quantity;
 
+	ent->item->dropcount = 0;
 	oldcount = other->client->pers.inventory[ITEM_INDEX(ent->item)];
 
 	if (!Add_Ammo (other, ent->item, count))
@@ -2141,7 +2142,7 @@ tank commander's head
 		"items/pkup.wav",
 		"models/objects/gibs/skull/tris.md2", EF_ROTATE|EF_QUAD|EF_DOUBLE,
 		NULL,
-/*icon*/"i_health",
+/*icon*/"",
 		"Strogg Soul",
 		2,
 		0,
@@ -2161,7 +2162,7 @@ tank commander's head
 		"items/pkup.wav",
 		"models/objects/gibs/skull/tris.md2", EF_ROTATE | EF_QUAD,
 		NULL,
-/*icon*/"i_health",
+/*icon*/"",
 		"Player Soul",
 		2,
 		0,
