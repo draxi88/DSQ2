@@ -1011,7 +1011,8 @@ typedef enum
 #define STAT_SPECTATOR			17
 #define STAT_HEALTH_FLASK		18
 #define STAT_SOULS				19
-#define STAT_STAMINA			20
+#define STAT_1KSOULS			20
+#define STAT_STAMINA			21
 
 #define	MAX_STATS				32
 

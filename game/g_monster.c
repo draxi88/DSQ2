@@ -550,7 +550,6 @@ void monster_death_use (edict_t *self)
 				break;
 			}
 			ammo->dropcount = random() * 6;
-			gi.dprintf("dropcount: %i\n", ammo->dropcount);
 			if(ammo->dropcount>0)
 				Drop_Item(self, ammo);
 		}

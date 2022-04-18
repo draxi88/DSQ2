@@ -506,96 +506,96 @@ void player_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damag
 	//DSQ2
 	DS_Respawn(self);
 	return;
-
-
-	self->takedamage = DAMAGE_YES;
-	self->movetype = MOVETYPE_TOSS;
-
-	self->s.modelindex2 = 0;	// remove linked weapon model
-
-	self->s.angles[0] = 0;
-	self->s.angles[2] = 0;
-
-	self->s.sound = 0;
-	self->client->weapon_sound = 0;
-
-	self->maxs[2] = -8;
-
-//	self->solid = SOLID_NOT;
-	self->svflags |= SVF_DEADMONSTER;
-
-	if (!self->deadflag)
-	{
-		self->client->respawn_time = level.time + 1.0;
-		LookAtKiller (self, inflictor, attacker);
-		self->client->ps.pmove.pm_type = PM_DEAD;
-		ClientObituary (self, inflictor, attacker);
-		TossClientWeapon (self);
-		if (deathmatch->value)
-			Cmd_Help_f (self);		// show scores
-
-		// clear inventory
-		// this is kind of ugly, but it's how we want to handle keys in coop
-		for (n = 0; n < game.num_items; n++)
-		{
-			if (coop->value && itemlist[n].flags & IT_KEY)
-				self->client->resp.coop_respawn.inventory[n] = self->client->pers.inventory[n];
-			self->client->pers.inventory[n] = 0;
-		}
-	}
-
-	// remove powerups
-	self->client->quad_framenum = 0;
-	self->client->invincible_framenum = 0;
-	self->client->breather_framenum = 0;
-	self->client->enviro_framenum = 0;
-	self->flags &= ~FL_POWER_ARMOR;
-
-	if (self->health < -40)
-	{	// gib
-		gi.sound (self, CHAN_BODY, gi.soundindex ("misc/udeath.wav"), 1, ATTN_NORM, 0);
-		for (n= 0; n < 4; n++)
-			ThrowGib (self, "models/objects/gibs/sm_meat/tris.md2", damage, GIB_ORGANIC);
-		ThrowClientHead (self, damage);
-
-		self->takedamage = DAMAGE_NO;
-	}
-	else
-	{	// normal death
-		if (!self->deadflag)
-		{
-			static int i;
-
-			i = (i+1)%3;
-			// start a death animation
-			self->client->anim_priority = ANIM_DEATH;
-			if (self->client->ps.pmove.pm_flags & PMF_DUCKED)
-			{
-				self->s.frame = FRAME_crdeath1-1;
-				self->client->anim_end = FRAME_crdeath5;
-			}
-			else switch (i)
-			{
-			case 0:
-				self->s.frame = FRAME_death101-1;
-				self->client->anim_end = FRAME_death106;
-				break;
-			case 1:
-				self->s.frame = FRAME_death201-1;
-				self->client->anim_end = FRAME_death206;
-				break;
-			case 2:
-				self->s.frame = FRAME_death301-1;
-				self->client->anim_end = FRAME_death308;
-				break;
-			}
-			gi.sound (self, CHAN_VOICE, gi.soundindex(va("*death%i.wav", (rand()%4)+1)), 1, ATTN_NORM, 0);
-		}
-	}
-
-	self->deadflag = DEAD_DEAD;
-
-	gi.linkentity (self);
+//
+//
+//	self->takedamage = DAMAGE_YES;
+//	self->movetype = MOVETYPE_TOSS;
+//
+//	self->s.modelindex2 = 0;	// remove linked weapon model
+//
+//	self->s.angles[0] = 0;
+//	self->s.angles[2] = 0;
+//
+//	self->s.sound = 0;
+//	self->client->weapon_sound = 0;
+//
+//	self->maxs[2] = -8;
+//
+////	self->solid = SOLID_NOT;
+//	self->svflags |= SVF_DEADMONSTER;
+//
+//	if (!self->deadflag)
+//	{
+//		self->client->respawn_time = level.time + 1.0;
+//		LookAtKiller (self, inflictor, attacker);
+//		self->client->ps.pmove.pm_type = PM_DEAD;
+//		ClientObituary (self, inflictor, attacker);
+//		TossClientWeapon (self);
+//		if (deathmatch->value)
+//			Cmd_Help_f (self);		// show scores
+//
+//		// clear inventory
+//		// this is kind of ugly, but it's how we want to handle keys in coop
+//		for (n = 0; n < game.num_items; n++)
+//		{
+//			if (coop->value && itemlist[n].flags & IT_KEY)
+//				self->client->resp.coop_respawn.inventory[n] = self->client->pers.inventory[n];
+//			self->client->pers.inventory[n] = 0;
+//		}
+//	}
+//
+//	// remove powerups
+//	self->client->quad_framenum = 0;
+//	self->client->invincible_framenum = 0;
+//	self->client->breather_framenum = 0;
+//	self->client->enviro_framenum = 0;
+//	self->flags &= ~FL_POWER_ARMOR;
+//
+//	if (self->health < -40)
+//	{	// gib
+//		gi.sound (self, CHAN_BODY, gi.soundindex ("misc/udeath.wav"), 1, ATTN_NORM, 0);
+//		for (n= 0; n < 4; n++)
+//			ThrowGib (self, "models/objects/gibs/sm_meat/tris.md2", damage, GIB_ORGANIC);
+//		ThrowClientHead (self, damage);
+//
+//		self->takedamage = DAMAGE_NO;
+//	}
+//	else
+//	{	// normal death
+//		if (!self->deadflag)
+//		{
+//			static int i;
+//
+//			i = (i+1)%3;
+//			// start a death animation
+//			self->client->anim_priority = ANIM_DEATH;
+//			if (self->client->ps.pmove.pm_flags & PMF_DUCKED)
+//			{
+//				self->s.frame = FRAME_crdeath1-1;
+//				self->client->anim_end = FRAME_crdeath5;
+//			}
+//			else switch (i)
+//			{
+//			case 0:
+//				self->s.frame = FRAME_death101-1;
+//				self->client->anim_end = FRAME_death106;
+//				break;
+//			case 1:
+//				self->s.frame = FRAME_death201-1;
+//				self->client->anim_end = FRAME_death206;
+//				break;
+//			case 2:
+//				self->s.frame = FRAME_death301-1;
+//				self->client->anim_end = FRAME_death308;
+//				break;
+//			}
+//			gi.sound (self, CHAN_VOICE, gi.soundindex(va("*death%i.wav", (rand()%4)+1)), 1, ATTN_NORM, 0);
+//		}
+//	}
+//
+//	self->deadflag = DEAD_DEAD;
+//
+//	gi.linkentity (self);
 }
 
 //=======================================================================
@@ -620,8 +620,7 @@ void InitClientPersistant (gclient_t *client)
 
 	client->pers.weapon = item;
 
-	client->pers.max_health = 100 + (client->pers.health_level * HEALTH_PLAYER);
-	client->pers.health			= client->pers.max_health;
+	
 	client->pers.max_bullets	= 200;
 	client->pers.max_shells		= 100;
 	client->pers.max_rockets	= 50;
@@ -632,8 +631,10 @@ void InitClientPersistant (gclient_t *client)
 	client->pers.connected = true;
 
 	//dsq2
+	client->pers.max_health = HEALTH_PLAYER_START + (client->pers.health_level * HEALTH_PLAYER_LEVEL);
+	client->pers.health = client->pers.max_health;
 	client->pers.souls = 0;
-	client->pers.max_stamina = 10 + (client->pers.stamina_level * STAMINA_PLAYER);
+	client->pers.max_stamina = STAMINA_PLAYER_START + (client->pers.stamina_level * STAMINA_PLAYER_LEVEL);
 	client->pers.stamina = client->pers.max_stamina;
 	client->pers.dmg_blaster = 10;
 	client->pers.dmg_shotgun = 4;

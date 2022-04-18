@@ -377,7 +377,7 @@ G_SetStats
 void G_SetStats (edict_t *ent)
 {
 	gitem_t		*item;
-	int			index, cells;
+	int			index, cells = 0;
 	int			power_armor_type;
 
 	//
@@ -386,7 +386,13 @@ void G_SetStats (edict_t *ent)
 	ent->client->ps.stats[STAT_HEALTH_ICON] = level.pic_health;
 	ent->client->ps.stats[STAT_HEALTH] = ent->health;
 	ent->client->ps.stats[STAT_HEALTH_FLASK] = ent->client->resp.health_flask;
-	ent->client->ps.stats[STAT_SOULS] = ent->client->pers.souls;
+
+	//souls
+	if(ent->client->pers.souls > 1000)
+		ent->client->ps.stats[STAT_1KSOULS] = ent->client->pers.souls / 1000;
+	else 
+		ent->client->ps.stats[STAT_1KSOULS] = 0;
+	ent->client->ps.stats[STAT_SOULS] = ent->client->pers.souls % 1000;
 
 	//stamina
 	ent->client->ps.stats[STAT_STAMINA] = ent->client->pers.stamina;

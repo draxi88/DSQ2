@@ -500,6 +500,7 @@ qboolean Pickup_Ammo (edict_t *ent, edict_t *other)
 	else
 		count = ent->item->quantity;
 
+	ent->item->dropcount = 0;
 	oldcount = other->client->pers.inventory[ITEM_INDEX(ent->item)];
 
 	if (!Add_Ammo (other, ent->item, count))
@@ -632,6 +633,14 @@ qboolean Pickup_Armor (edict_t *ent, edict_t *other)
 		else
 			other->client->pers.inventory[old_armor_index] += 2;
 	}
+
+	//DSQ2
+	if (!Q_stricmp(ent->classname, "item_armor_jacket"))
+		other->client->pers.JacketArmor = true;
+	if (!Q_stricmp(ent->classname, "item_armor_combat"))
+		other->client->pers.CombatArmor = true;
+	if (!Q_stricmp(ent->classname, "item_armor_body"))
+		other->client->pers.BodyArmor = true;
 
 	// if player has no armor, just use it
 	else if (!old_armor_index)
@@ -2141,7 +2150,7 @@ tank commander's head
 		"items/pkup.wav",
 		"models/objects/gibs/skull/tris.md2", EF_ROTATE|EF_QUAD|EF_DOUBLE,
 		NULL,
-/*icon*/"i_health",
+/*icon*/"",
 		"Strogg Soul",
 		2,
 		0,
@@ -2161,7 +2170,7 @@ tank commander's head
 		"items/pkup.wav",
 		"models/objects/gibs/skull/tris.md2", EF_ROTATE | EF_QUAD,
 		NULL,
-/*icon*/"i_health",
+/*icon*/"",
 		"Player Soul",
 		2,
 		0,

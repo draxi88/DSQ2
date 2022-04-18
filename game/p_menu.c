@@ -120,7 +120,7 @@ void PMenu_Do_Update(edict_t *ent)
 	hnd = ent->client->menu;
 
 	strcpy(string, "xv 32 yv 8 picn inventory ");
-	//	strcpy(string, "xv -96 yv 8 picn jven ");
+	//strcpy(string, "xv 32 yv 8 picn conback ");
 
 	for (i = 0, p = hnd->entries; i < hnd->num; i++, p++) {
 		if (!p->text || !*(p->text))
@@ -317,16 +317,16 @@ pmenu_t mainmenu[] = {
 pmenu_t weaponmenu[] = {
 	{ "*DARK STROGGS Quake II",					PMENU_ALIGN_CENTER, NULL },
 	{ NULL,                	PMENU_ALIGN_CENTER, NULL },
-	{ "wep1",				PMENU_ALIGN_LEFT, NULL },
-	{ "wep2",				PMENU_ALIGN_LEFT, NULL },
-	{ "wep3",				PMENU_ALIGN_LEFT, NULL },
-	{ "wep4",				PMENU_ALIGN_LEFT, NULL },
-	{ "wep5",				PMENU_ALIGN_LEFT, NULL },
-	{ "wep6",				PMENU_ALIGN_LEFT, NULL },
-	{ "wep7",				PMENU_ALIGN_LEFT, NULL },
-	{ "wep8",				PMENU_ALIGN_LEFT, NULL },
-	{ "wep9",				PMENU_ALIGN_LEFT, NULL },
-	{ "wep10",				PMENU_ALIGN_LEFT, NULL },
+	{ "",				PMENU_ALIGN_LEFT, NULL },
+	{ "",				PMENU_ALIGN_LEFT, NULL },
+	{ "",				PMENU_ALIGN_LEFT, NULL },
+	{ "",				PMENU_ALIGN_LEFT, NULL },
+	{ "",				PMENU_ALIGN_LEFT, NULL },
+	{ "",				PMENU_ALIGN_LEFT, NULL },
+	{ "",				PMENU_ALIGN_LEFT, NULL },
+	{ "",				PMENU_ALIGN_LEFT, NULL },
+	{ "",				PMENU_ALIGN_LEFT, NULL },
+	{ "",				PMENU_ALIGN_LEFT, NULL },
 	{ NULL,					PMENU_ALIGN_LEFT, NULL },
 	{ NULL,					PMENU_ALIGN_LEFT, NULL },
 	{ NULL,					PMENU_ALIGN_LEFT, NULL },
@@ -369,25 +369,92 @@ void MainMenuOpen(edict_t *ent)
 void WeaponMenuOpen(edict_t *ent, pmenuhnd_t *p)
 {
 	gitem_t *it;
-	int i,j;
-	j = 7;
-	for (i = 2; i <= 12; i++) {
-		weaponmenu[i].text = "";
-		while(j <= 18) {
-			if (ent->client->pers.inventory[j]) {
-				it = &itemlist[j];
-				if (!it->weapmodel) {
-					j++;
-					continue;
-				}
-				sprintf(it->menuname, "%s (level %i)", it->pickup_name, it->level+1);
-				weaponmenu[i].text = it->menuname;
-				weaponmenu[i].SelectFunc = UpgradeWeapon;
-				j++;
-				break;
-			}
-			j++;
-		}
+	int i = 3;
+	it = FindItemByClassname("weapon_blaster");
+	sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_BLASTER + (BlasterLevel * it->level));
+	weaponmenu[2].text = it->menuname;
+	weaponmenu[2].SelectFunc = UpgradeWeapon;
+	
+	int index;
+	index = ITEM_INDEX(FindItemByClassname("weapon_shotgun"));
+	if (ent->client->pers.inventory[index]){
+		it = &itemlist[index];
+		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_SHOTGUN + ShotgunLevel * it->level);
+		weaponmenu[i].text = it->menuname;
+		weaponmenu[i].SelectFunc = UpgradeWeapon;
+		i++;
+	}
+	index = ITEM_INDEX(FindItemByClassname("weapon_supershotgun"));
+	if (ent->client->pers.inventory[index]) {
+		it = &itemlist[index];
+		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_SHOTGUN + ShotgunLevel * it->level);
+		weaponmenu[i].text = it->menuname;
+		weaponmenu[i].SelectFunc = UpgradeWeapon;
+		i++;
+	}
+	index = ITEM_INDEX(FindItemByClassname("weapon_machinegun"));
+	if (ent->client->pers.inventory[index]) {
+		it = &itemlist[index];
+		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_BULLET + MachinegunLevel * it->level);
+		weaponmenu[i].text = it->menuname;
+		weaponmenu[i].SelectFunc = UpgradeWeapon;
+		i++;
+	}
+	index = ITEM_INDEX(FindItemByClassname("weapon_supershotgun"));
+	if (ent->client->pers.inventory[index]) {
+		it = &itemlist[index];
+		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_BULLET + ChaingunLevel * it->level);
+		weaponmenu[i].text = it->menuname;
+		weaponmenu[i].SelectFunc = UpgradeWeapon;
+		i++;
+	}
+	index = ITEM_INDEX(FindItemByClassname("ammo_grenades"));
+	if (ent->client->pers.inventory[index]) {
+		it = &itemlist[index];
+		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_GRENADE + GrenadeLevel * it->level);
+		weaponmenu[i].text = it->menuname;
+		weaponmenu[i].SelectFunc = UpgradeWeapon;
+		i++;
+	}
+	index = ITEM_INDEX(FindItemByClassname("weapon_grenadelauncher"));
+	if (ent->client->pers.inventory[index]) {
+		it = &itemlist[index];
+		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_GRENADE + GrenadeLevel * it->level);
+		weaponmenu[i].text = it->menuname;
+		weaponmenu[i].SelectFunc = UpgradeWeapon;
+		i++;
+	}
+	index = ITEM_INDEX(FindItemByClassname("weapon_rocketlauncher"));
+	if (ent->client->pers.inventory[index]) {
+		it = &itemlist[index];
+		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_ROCKET + RocketLevel * it->level);
+		weaponmenu[i].text = it->menuname;
+		weaponmenu[i].SelectFunc = UpgradeWeapon;
+		i++;
+	}
+	index = ITEM_INDEX(FindItemByClassname("weapon_hyperblaster"));
+	if (ent->client->pers.inventory[index]) {
+		it = &itemlist[index];
+		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_HYPERBLASTER + HyperblasterLevel * it->level);
+		weaponmenu[i].text = it->menuname;
+		weaponmenu[i].SelectFunc = UpgradeWeapon;
+		i++;
+	}
+	index = ITEM_INDEX(FindItemByClassname("weapon_railgun"));
+	if (ent->client->pers.inventory[index]) {
+		it = &itemlist[index];
+		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_RAILGUN + RailgunLevel * it->level);
+		weaponmenu[i].text = it->menuname;
+		weaponmenu[i].SelectFunc = UpgradeWeapon;
+		i++;
+	}
+	index = ITEM_INDEX(FindItemByClassname("weapon_bfg"));
+	if (ent->client->pers.inventory[index]) {
+		it = &itemlist[index];
+		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_BFG + BFGLevel * it->level);
+		weaponmenu[i].text = it->menuname;
+		weaponmenu[i].SelectFunc = UpgradeWeapon;
+		i++;
 	}
 	PMenu_Close(ent);
 	PMenu_Open(ent, weaponmenu, p->cur, sizeof(weaponmenu) / sizeof(pmenu_t), NULL);
@@ -400,23 +467,23 @@ void ArmorMenuOpen(edict_t *ent, pmenuhnd_t *p)
 		weaponmenu[i].text = "";
 	}
 	int i = 2;
-	it = FindItem("Jacket Armor");
-	if (ent->client->pers.inventory[ITEM_INDEX(it)] != 0) {
-		sprintf(it->menuname, "%s (level %i)", it->pickup_name, it->level + 1);
+	if (ent->client->pers.JacketArmor) {
+		it = FindItem("Jacket Armor");
+		sprintf(it->menuname, "Jacket Armor (level %i)", it->level + 1);
 		weaponmenu[i].text = it->menuname;
 		weaponmenu[i].SelectFunc = UpgradeWeapon;
 		i++;
 	}
-	it = FindItem("Combat Armor");
-	if (ent->client->pers.inventory[ITEM_INDEX(it)] != 0) {
-		sprintf(it->menuname, "%s (level %i)", it->pickup_name, it->level + 1);
+	if (ent->client->pers.CombatArmor) {
+		it = FindItem("Combat Armor");
+		sprintf(it->menuname, "Combat Armor (level %i)", it->level + 1);
 		weaponmenu[i].text = it->menuname;
 		weaponmenu[i].SelectFunc = UpgradeWeapon;
 		i++;
 	}
-	it = FindItem("Body Armor");
-	if (ent->client->pers.inventory[ITEM_INDEX(it)] != 0) {
-		sprintf(it->menuname, "%s (level %i)", it->pickup_name, it->level + 1);
+	if (ent->client->pers.BodyArmor) {
+		it = FindItem("Body Armor");
+		sprintf(it->menuname, "Body Armor (level %i)",  it->level + 1);
 		weaponmenu[i].text = it->menuname;
 		weaponmenu[i].SelectFunc = UpgradeWeapon;
 		i++;
