@@ -387,22 +387,9 @@ void fire_blaster (edict_t *self, vec3_t start, vec3_t dir, int damage, int spee
 		VectorMA (bolt->s.origin, -10, dir, bolt->s.origin);
 		bolt->touch (bolt, tr.ent, NULL, NULL);
 	}
-}	
-
-static void Grenade_Teleport(edict_t *ent)
-{
-	vec3_t		origin;
-
-	VectorCopy(ent->s.origin, origin);
-	origin[2] += 32;
-	VectorCopy(origin, ent->owner->s.origin);
-	gi.WriteByte(svc_temp_entity);
-	gi.WriteByte(TE_TELEPORT_EFFECT);
-	gi.WritePosition(origin);
-	gi.multicast(ent->s.origin, MULTICAST_PHS);
-
-	G_FreeEdict(ent);
 }
+
+
 /*
 =================
 fire_grenade
@@ -475,6 +462,24 @@ static void Grenade_Touch(edict_t *ent, edict_t *other, cplane_t *plane, csurfac
 		G_FreeEdict(ent);
 		return;
 	}
+	if (!other->takedamage)
+	{
+		if (ent->spawnflags & 1)
+		{
+			if (random() > 0.5)
+				gi.sound(ent, CHAN_VOICE, gi.soundindex("weapons/hgrenb1a.wav"), 1, ATTN_NORM, 0);
+			else
+				gi.sound(ent, CHAN_VOICE, gi.soundindex("weapons/hgrenb2a.wav"), 1, ATTN_NORM, 0);
+		}
+		else
+		{
+			gi.sound(ent, CHAN_VOICE, gi.soundindex("weapons/grenlb1b.wav"), 1, ATTN_NORM, 0);
+		}
+		return;
+	}
+
+	ent->enemy = other;
+	Grenade_Explode(ent);
 }
 
 void fire_grenade(edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, float timer, float damage_radius)

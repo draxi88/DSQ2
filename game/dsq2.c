@@ -20,6 +20,7 @@ void DrinkHealth(edict_t *ent) {
 }
 
 void UpdateHealth(edict_t *ent) {
+	char msg[128] = "";
 	if (ent->client->pers.souls >= xplevel[ent->client->pers.health_level] && ent->client->pers.health_level < 99) {
 		//upgrade
 		ent->client->pers.max_health += HEALTH_PLAYER_LEVEL;
@@ -27,8 +28,12 @@ void UpdateHealth(edict_t *ent) {
 		ent->client->pers.health_level++;
 	}
 	else {
-		gi.cprintf(ent, PRINT_HIGH, "Could not upgrade health. %s\n", ent->client->pers.health_level < 99 ? "Not enough stroggpoints" : "Health is maxed!");
-		return;
+		sprintf(msg + strlen(msg), "Could not upgrade health.");
+		if (ent->client->pers.health_level < 99)
+			sprintf(msg + strlen(msg), "Not enough stroggpoints (%i more needed).", xplevel[ent->client->pers.health_level] - ent->client->pers.souls);
+		else
+			sprintf(msg + strlen(msg), "Health is maxed!");
+		gi.cprintf(ent, PRINT_HIGH, "%s\n", msg);
 	}
 	ent->health = ent->client->pers.max_health;
 
@@ -36,6 +41,7 @@ void UpdateHealth(edict_t *ent) {
 }
 
 void UpdateStamina(edict_t *ent) {
+	char msg[128] = "";
 	if (ent->client->pers.souls >= xplevel[ent->client->pers.stamina_level] && ent->client->pers.stamina_level < 99) {
 		//upgrade
 		ent->client->pers.max_stamina += STAMINA_PLAYER_LEVEL;
@@ -43,7 +49,12 @@ void UpdateStamina(edict_t *ent) {
 		ent->client->pers.stamina_level++;
 	}
 	else {
-		gi.cprintf(ent, PRINT_HIGH, "Could not upgrade stamina. %s\n", ent->client->pers.stamina_level < 99 ? "Not enough stroggpoints" : "Stamina is maxed!");
+		sprintf(msg + strlen(msg), "Could not upgrade stamina.");
+		if (ent->client->pers.stamina_level < 99)
+			sprintf(msg + strlen(msg), "Not enough stroggpoints (%i more needed).", xplevel[ent->client->pers.stamina_level] - ent->client->pers.souls);
+		else
+			sprintf(msg + strlen(msg), "Stamina is maxed!");
+		gi.cprintf(ent, PRINT_HIGH, "%s\n", msg);
 		return;
 	}
 	ent->client->pers.stamina = ent->client->pers.max_stamina;
@@ -53,6 +64,7 @@ void UpdateStamina(edict_t *ent) {
 void UpgradeWeapon(edict_t *ent, pmenuhnd_t *hnd) {
 	gitem_t *it;
 	int i;
+	char msg[128] = "";
 	i = hnd->cur+5;
 	while (i < 18) {
 		if (ent->client->pers.inventory[i]) {
@@ -65,7 +77,37 @@ void UpgradeWeapon(edict_t *ent, pmenuhnd_t *hnd) {
 				break;
 			}
 			else {
-				gi.cprintf(ent, PRINT_HIGH, "Could not upgrade this weapon. %s\n", it->level < 99 ? "Not enough stroggpoints" : "Weapon is maxed!");
+				sprintf(msg + strlen(msg), "Could not upgrade %s.", it->pickup_name);
+				if(it->level < 99)
+					sprintf(msg + strlen(msg), "Not enough stroggpoints (%i more needed).", xplevel[it->level] - ent->client->pers.souls);
+				else 
+					sprintf(msg + strlen(msg), "Weapon is maxed!");
+				gi.cprintf(ent, PRINT_HIGH, "%s\n", msg);
+				return;
+			}
+		}
+		i++;
+	}
+	//gi.cprintf(ent, PRINT_HIGH, "hnd->num:%i, hnd->cur:%i hnd->entries->text:%s\n",hnd->num, hnd->cur, hnd->entries->text);
+	WeaponMenuOpen(ent, hnd);
+}
+
+void UpgradeArmor(edict_t *ent, pmenuhnd_t *hnd) {
+	gitem_t *it;
+	int i;
+	i = hnd->cur + 5;
+	while (i < 18) {
+		if (ent->client->pers.inventory[i]) {
+			it = &itemlist[i];
+			if (ent->client->pers.souls >= xplevel[it->level] && it->level < 99) {
+				//upgrade
+				ent->client->pers.souls -= xplevel[it->level];
+				it->level++;
+				gi.cprintf(ent, PRINT_HIGH, "%s updated.\n", it->classname);
+				break;
+			}
+			else {
+				gi.cprintf(ent, PRINT_HIGH, "Could not upgrade %s%s\n", it->pickup_name, it->level < 99 ? ". Not enough stroggpoints" : " anymore!");
 				return;
 			}
 		}
@@ -215,7 +257,7 @@ void SpawnSouls() {
 		VectorSet(ent->s.origin, -234, 1415, -75);
 		soul->count_width = 1000;
 		Drop_Item(ent, soul);
-		gi.dprintf("%s spawned at %s\n", soul->classname, vtos(ent->s.origin));
+		//gi.dprintf("%s spawned at %s\n", soul->classname, vtos(ent->s.origin));
 	}
 	gi.linkentity(ent);
 

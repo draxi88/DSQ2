@@ -897,6 +897,10 @@ typedef struct
 	float stoprun;
 	qboolean stuffed;
 
+	qboolean JacketArmor;
+	qboolean CombatArmor;
+	qboolean BodyArmor;
+
 } client_persistant_t;
 
 // client data that stays across deathmatch respawns

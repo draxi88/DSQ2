@@ -653,7 +653,7 @@ char *single_statusbar =
 "yb	-24 "
 
 // stamina
-"if 20 "
+"if 21 "
 "xv -100 "
 "num 2 20 "
 "endif "
@@ -672,23 +672,27 @@ char *single_statusbar =
 
 // ammo
 "if 2 "
-"	xv	100 "
-"	anum "
-"	xv	150 "
-"	pic 2 "
+	" xv 100 "
+	" anum "
+	" xv 150 "
+	" pic 2 "
 "endif "
 
 // armor
 "if 4 "
-"	xv	200 "
-"	rnum "
-"	xv	250 "
-"	pic 4 "
+	" xv 200 "
+	" rnum "
+	" xv 250 "
+	" pic 4 "
 "endif "
 
 //soulpoints
-"xv 350 "
-"num 5 19 "
+"if 20 "
+	"xv 320 "
+	"num 3 20 "
+"endif "
+"xv 360 "
+"num 4 19 "
 
 
 // selected item

@@ -634,6 +634,14 @@ qboolean Pickup_Armor (edict_t *ent, edict_t *other)
 			other->client->pers.inventory[old_armor_index] += 2;
 	}
 
+	//DSQ2
+	if (!Q_stricmp(ent->classname, "item_armor_jacket"))
+		other->client->pers.JacketArmor = true;
+	if (!Q_stricmp(ent->classname, "item_armor_combat"))
+		other->client->pers.CombatArmor = true;
+	if (!Q_stricmp(ent->classname, "item_armor_body"))
+		other->client->pers.BodyArmor = true;
+
 	// if player has no armor, just use it
 	else if (!old_armor_index)
 	{

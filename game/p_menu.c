@@ -120,7 +120,7 @@ void PMenu_Do_Update(edict_t *ent)
 	hnd = ent->client->menu;
 
 	strcpy(string, "xv 32 yv 8 picn inventory ");
-	//	strcpy(string, "xv -96 yv 8 picn jven ");
+	//strcpy(string, "xv 32 yv 8 picn conback ");
 
 	for (i = 0, p = hnd->entries; i < hnd->num; i++, p++) {
 		if (!p->text || !*(p->text))
@@ -467,23 +467,23 @@ void ArmorMenuOpen(edict_t *ent, pmenuhnd_t *p)
 		weaponmenu[i].text = "";
 	}
 	int i = 2;
-	it = FindItem("Jacket Armor");
-	if (ent->client->pers.inventory[ITEM_INDEX(it)] != 0) {
-		sprintf(it->menuname, "%s (level %i)", it->pickup_name, it->level + 1);
+	if (ent->client->pers.JacketArmor) {
+		it = FindItem("Jacket Armor");
+		sprintf(it->menuname, "Jacket Armor (level %i)", it->level + 1);
 		weaponmenu[i].text = it->menuname;
 		weaponmenu[i].SelectFunc = UpgradeWeapon;
 		i++;
 	}
-	it = FindItem("Combat Armor");
-	if (ent->client->pers.inventory[ITEM_INDEX(it)] != 0) {
-		sprintf(it->menuname, "%s (level %i)", it->pickup_name, it->level + 1);
+	if (ent->client->pers.CombatArmor) {
+		it = FindItem("Combat Armor");
+		sprintf(it->menuname, "Combat Armor (level %i)", it->level + 1);
 		weaponmenu[i].text = it->menuname;
 		weaponmenu[i].SelectFunc = UpgradeWeapon;
 		i++;
 	}
-	it = FindItem("Body Armor");
-	if (ent->client->pers.inventory[ITEM_INDEX(it)] != 0) {
-		sprintf(it->menuname, "%s (level %i)", it->pickup_name, it->level + 1);
+	if (ent->client->pers.BodyArmor) {
+		it = FindItem("Body Armor");
+		sprintf(it->menuname, "Body Armor (level %i)",  it->level + 1);
 		weaponmenu[i].text = it->menuname;
 		weaponmenu[i].SelectFunc = UpgradeWeapon;
 		i++;
