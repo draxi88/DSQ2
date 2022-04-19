@@ -653,15 +653,15 @@ char *single_statusbar =
 "yb	-24 "
 
 // stamina
-"if 21 "
-"xv -100 "
-"num 2 20 "
+"if 20 "
+	"xv -100 "
+	"num 2 21 "
 "endif "
 
 // health flask
 "if 18 "
-"xv -56 "
-"num 2 18 "
+	"xv -56 "
+	"num 2 18 "
 "endif "
 
 //health
@@ -686,15 +686,6 @@ char *single_statusbar =
 	" pic 4 "
 "endif "
 
-//soulpoints
-"if 20 "
-	"xv 320 "
-	"num 3 20 "
-"endif "
-"xv 360 "
-"num 4 19 "
-
-
 // selected item
 "if 6 "
 	"xv	296 "
@@ -711,20 +702,24 @@ char *single_statusbar =
 	"stat_string 8 "
 "endif "
 
+//soulpoints
+"xv 340 yb -12 "
+"stat_string 19 "
+
 "yb	-50 "
 
 // timer
 "if 9 "
-"xv	262 "
-"num 2 10 "
-"xv	296 "
-"pic 9 "
+	"xv	262 "
+	"num 2 10 "
+	"xv	296 "
+	"pic 9 "
 "endif "
 
 //  help / weapon icon 
 "if 11 "
-"	xv	148 "
-"	pic	11 "
+	" xv 148 "
+	" pic 11 "
 "endif "
 ;
 
@@ -864,7 +859,7 @@ void SP_worldspawn (edict_t *ent)
 	// status bar program
 	if (deathmatch->value)
 		gi.configstring (CS_STATUSBAR, dm_statusbar);
-	else
+	else 
 		gi.configstring(CS_STATUSBAR, single_statusbar);
 
 	//---------------

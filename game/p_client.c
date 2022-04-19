@@ -1635,6 +1635,8 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 	int		i, j;
 	pmove_t	pm;
 	vec3_t temp;
+	char soulcounter[32];
+	char souls[32];
 
 	level.current_entity = ent;
 	client = ent->client;
@@ -1833,6 +1835,15 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 			PMenu_Close(ent);
 		}
 	}
+
+	//update statusbar
+	Com_sprintf(souls, sizeof(souls), "%i", ent->client->pers.souls);
+	Com_sprintf(soulcounter, sizeof(soulcounter), "Souls: %5s", HighAscii(souls));
+	/*gi.WriteByte(svc_configstring); //need this if we're going coop mode..
+	gi.WriteShort(CS_SOULCOUNTER);
+	gi.WriteString(soulcounter);
+	gi.unicast(ent, true);*/
+	gi.configstring(CS_SOULCOUNTER, soulcounter);
 }
 
 
