@@ -10,6 +10,20 @@ xplevel[99] = { 500, 700, 1000, 1400, 1900, 2500, 3200, 4000, 4900, 5900, 7000, 
 437500, 446900, 456400, 466000, 475700, 485500, 495400 };
 
 
+char *HighAscii(char *str)
+{
+	int len = strlen(str);
+	int i;
+	if (len)
+	{
+		for (i = 0; i < len; i++)
+		{
+			str[i] |= 128;
+		}
+	}
+	return str;
+}
+
 void DrinkHealth(edict_t *ent) {
 	if (!ent->client->resp.health_flask)
 		return;

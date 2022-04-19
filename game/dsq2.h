@@ -74,6 +74,7 @@ int xplevel[99];
 	entity_s all_entities[MAX_EDICTS];
 #endif // !ITEM_SET
 
+char *HighAscii(char *str);
 
 //menu stuff
 void MainMenuOpen(edict_t *ent);
