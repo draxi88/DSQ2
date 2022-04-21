@@ -367,3 +367,4 @@ ref_gl/build/
 game/build/
 *.db
 .vs/game/v15/Browse.VC.opendb
+.vs/game/v15/Browse.VC.db
