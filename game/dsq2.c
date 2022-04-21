@@ -83,17 +83,17 @@ void UpgradeWeapon(edict_t *ent, pmenuhnd_t *hnd) {
 	while (i < 18) {
 		if (ent->client->pers.inventory[i]) {
 			it = &itemlist[i];
-			if (ent->client->pers.souls >= xplevel[it->level] && it->level < 99) {
+			if (ent->client->pers.souls >= xplevel[ent->client->pers.levels[ITEM_INDEX(it)]] && ent->client->pers.levels[ITEM_INDEX(it)] < 99) {
 				//upgrade
-				ent->client->pers.souls -= xplevel[it->level];
-				it->level++;
+				ent->client->pers.souls -= xplevel[ent->client->pers.levels[ITEM_INDEX(it)]];
+				ent->client->pers.levels[ITEM_INDEX(it)]++;
 				gi.cprintf(ent, PRINT_HIGH, "%s updated.\n", it->classname);
 				break;
 			}
 			else {
 				sprintf(msg + strlen(msg), "Could not upgrade %s.", it->pickup_name);
-				if(it->level < 99)
-					sprintf(msg + strlen(msg), "Not enough stroggpoints (%i more needed).", xplevel[it->level] - ent->client->pers.souls);
+				if(ent->client->pers.levels[ITEM_INDEX(it)] < 99)
+					sprintf(msg + strlen(msg), "Not enough stroggpoints (%i more needed).", xplevel[ent->client->pers.levels[ITEM_INDEX(it)]] - ent->client->pers.souls);
 				else 
 					sprintf(msg + strlen(msg), "Weapon is maxed!");
 				gi.cprintf(ent, PRINT_HIGH, "%s\n", msg);
@@ -113,15 +113,15 @@ void UpgradeArmor(edict_t *ent, pmenuhnd_t *hnd) {
 	while (i < 18) {
 		if (ent->client->pers.inventory[i]) {
 			it = &itemlist[i];
-			if (ent->client->pers.souls >= xplevel[it->level] && it->level < 99) {
+			if (ent->client->pers.souls >= xplevel[ent->client->pers.levels[ITEM_INDEX(it)]] && ent->client->pers.levels[ITEM_INDEX(it)] < 99) {
 				//upgrade
-				ent->client->pers.souls -= xplevel[it->level];
-				it->level++;
+				ent->client->pers.souls -= xplevel[ent->client->pers.levels[ITEM_INDEX(it)]];
+				ent->client->pers.levels[ITEM_INDEX(it)]++;
 				gi.cprintf(ent, PRINT_HIGH, "%s updated.\n", it->classname);
 				break;
 			}
 			else {
-				gi.cprintf(ent, PRINT_HIGH, "Could not upgrade %s%s\n", it->pickup_name, it->level < 99 ? ". Not enough stroggpoints" : " anymore!");
+				gi.cprintf(ent, PRINT_HIGH, "Could not upgrade %s%s\n", it->pickup_name, ent->client->pers.levels[ITEM_INDEX(it)] < 99 ? ". Not enough stroggpoints" : " anymore!");
 				return;
 			}
 		}
@@ -138,9 +138,9 @@ void DeleteItems(edict_t *ent) {
 		item = &g_edicts[i];
 		if (!item->inuse)
 			continue;
-		if (!strstr(item->classname, "armor_shard"))
+		else if (strstr(item->classname, "armor_shard") == 0 && strstr(item->classname, "item_he") == 0) {
 			continue;
-		//gi.dprintf("%s deleted.\n", item->classname);
+		}
 		G_FreeEdict(item);
 	}
 }

@@ -70,6 +70,7 @@ void SelectNextItem (edict_t *ent, int itflags)
 	gitem_t		*it;
 
 	cl = ent->client;
+
 	//ZOID
 	if (cl->menu) {
 		PMenu_Next(ent);
@@ -79,6 +80,11 @@ void SelectNextItem (edict_t *ent, int itflags)
 		return;
 	}
 	//ZOID
+
+	if (cl->chase_target) {
+		ChaseNext(ent);
+		return;
+	}
 
 	// scan  for the next valid one
 	for (i=1 ; i<=MAX_ITEMS ; i++)
@@ -116,6 +122,11 @@ void SelectPrevItem (edict_t *ent, int itflags)
 		return;
 	}
 	//ZOID
+
+	if (cl->chase_target) {
+		ChasePrev(ent);
+		return;
+	}
 
 	// scan  for the next valid one
 	for (i=1 ; i<=MAX_ITEMS ; i++)
@@ -166,6 +177,7 @@ void Cmd_Give_f (edict_t *ent)
 	int			i;
 	qboolean	give_all;
 	edict_t		*it_ent;
+
 #ifndef CHEATS
 	return;
 #endif
@@ -320,9 +332,11 @@ argv(0) god
 void Cmd_God_f (edict_t *ent)
 {
 	char	*msg;
+
 #ifndef CHEATS
 	return;
 #endif
+
 	if (deathmatch->value && !sv_cheats->value)
 	{
 		gi.cprintf (ent, PRINT_HIGH, "You must run the server with '+set cheats 1' to enable this command.\n");
@@ -335,7 +349,7 @@ void Cmd_God_f (edict_t *ent)
 	else
 		msg = "godmode ON\n";
 
-	gi.cprintf (ent, PRINT_HIGH, msg);
+	gi.cprintf (ent, PRINT_HIGH, "%s", msg);
 }
 
 
@@ -364,7 +378,7 @@ void Cmd_Notarget_f (edict_t *ent)
 	else
 		msg = "notarget ON\n";
 
-	gi.cprintf (ent, PRINT_HIGH, msg);
+	gi.cprintf (ent, PRINT_HIGH, "%s", msg);
 }
 
 
@@ -378,9 +392,11 @@ argv(0) noclip
 void Cmd_Noclip_f (edict_t *ent)
 {
 	char	*msg;
+
 #ifndef CHEATS
 	return;
 #endif
+
 	if (deathmatch->value && !sv_cheats->value)
 	{
 		gi.cprintf (ent, PRINT_HIGH, "You must run the server with '+set cheats 1' to enable this command.\n");
@@ -398,7 +414,7 @@ void Cmd_Noclip_f (edict_t *ent)
 		msg = "noclip ON\n";
 	}
 
-	gi.cprintf (ent, PRINT_HIGH, msg);
+	gi.cprintf (ent, PRINT_HIGH, "%s", msg);
 }
 
 
@@ -523,7 +539,6 @@ Cmd_InvUse_f
 void Cmd_InvUse_f (edict_t *ent)
 {
 	gitem_t		*it;
-
 
 	//ZOID
 	if (ent->client->menu) {
@@ -728,7 +743,7 @@ void Cmd_Players_f (edict_t *ent)
 {
 	int		i;
 	int		count;
-	char	small[64];
+	char	smallc[64];
 	char	large[1280];
 	int		index[256];
 
@@ -748,15 +763,15 @@ void Cmd_Players_f (edict_t *ent)
 
 	for (i = 0 ; i < count ; i++)
 	{
-		Com_sprintf (small, sizeof(small), "%3i %s\n",
+		Com_sprintf (smallc, sizeof(smallc), "%3i %s\n",
 			game.clients[index[i]].ps.stats[STAT_FRAGS],
 			game.clients[index[i]].pers.netname);
-		if (strlen (small) + strlen(large) > sizeof(large) - 100 )
+		if (strlen (smallc) + strlen(large) > sizeof(large) - 100 )
 		{	// can't print all of them in one packet
 			strcat (large, "...\n");
 			break;
 		}
-		strcat (large, small);
+		strcat (large, smallc);
 	}
 
 	gi.cprintf (ent, PRINT_HIGH, "%s\n%i players\n", large, count);
@@ -869,7 +884,7 @@ void Cmd_Say_f (edict_t *ent, qboolean team, qboolean arg0)
 				(int)(cl->flood_locktill - level.time));
             return;
         }
-        i = cl->flood_whenhead - flood_msgs->value + 1;
+        i = (int)(cl->flood_whenhead - flood_msgs->value + 1);
         if (i < 0)
             i = (sizeof(cl->flood_when)/sizeof(cl->flood_when[0])) + i;
 		if (cl->flood_when[i] && 
@@ -916,7 +931,7 @@ void Cmd_PlayerList_f(edict_t *ent)
 		if (!e2->inuse)
 			continue;
 
-		Com_sprintf(st, sizeof(st), "%02d:%02d %4d %3d %s%s\n",
+		sprintf(st, "%02d:%02d %4d %3d %s%s\n",
 			(level.framenum - e2->client->resp.enterframe) / 600,
 			((level.framenum - e2->client->resp.enterframe) % 600)/10,
 			e2->client->ping,
@@ -977,55 +992,55 @@ void ClientCommand (edict_t *ent)
 	if (level.intermissiontime)
 		return;
 
-	if (Q_stricmp(cmd, "use") == 0)
-		Cmd_Use_f(ent);
-	else if (Q_stricmp(cmd, "drop") == 0)
-		Cmd_Drop_f(ent);
-	else if (Q_stricmp(cmd, "give") == 0)
-		Cmd_Give_f(ent);
-	else if (Q_stricmp(cmd, "god") == 0)
-		Cmd_God_f(ent);
-	else if (Q_stricmp(cmd, "notarget") == 0)
-		Cmd_Notarget_f(ent);
-	else if (Q_stricmp(cmd, "noclip") == 0)
-		Cmd_Noclip_f(ent);
-	else if (Q_stricmp(cmd, "inven") == 0)
-		Cmd_Inven_f(ent);
-	else if (Q_stricmp(cmd, "invnext") == 0)
-		SelectNextItem(ent, -1);
-	else if (Q_stricmp(cmd, "invprev") == 0)
-		SelectPrevItem(ent, -1);
-	else if (Q_stricmp(cmd, "invnextw") == 0)
-		SelectNextItem(ent, IT_WEAPON);
-	else if (Q_stricmp(cmd, "invprevw") == 0)
-		SelectPrevItem(ent, IT_WEAPON);
-	else if (Q_stricmp(cmd, "invnextp") == 0)
-		SelectNextItem(ent, IT_POWERUP);
-	else if (Q_stricmp(cmd, "invprevp") == 0)
-		SelectPrevItem(ent, IT_POWERUP);
-	else if (Q_stricmp(cmd, "invuse") == 0)
-		Cmd_InvUse_f(ent);
-	else if (Q_stricmp(cmd, "invdrop") == 0)
-		Cmd_InvDrop_f(ent);
-	else if (Q_stricmp(cmd, "weapprev") == 0)
-		Cmd_WeapPrev_f(ent);
-	else if (Q_stricmp(cmd, "weapnext") == 0)
-		Cmd_WeapNext_f(ent);
-	else if (Q_stricmp(cmd, "weaplast") == 0)
-		Cmd_WeapLast_f(ent);
-	else if (Q_stricmp(cmd, "kill") == 0)
-		Cmd_Kill_f(ent);
-	else if (Q_stricmp(cmd, "putaway") == 0)
-		Cmd_PutAway_f(ent);
-	else if (Q_stricmp(cmd, "wave") == 0)
-		Cmd_Wave_f(ent);
+	if (Q_stricmp (cmd, "use") == 0)
+		Cmd_Use_f (ent);
+	else if (Q_stricmp (cmd, "drop") == 0)
+		Cmd_Drop_f (ent);
+	else if (Q_stricmp (cmd, "give") == 0)
+		Cmd_Give_f (ent);
+	else if (Q_stricmp (cmd, "god") == 0)
+		Cmd_God_f (ent);
+	else if (Q_stricmp (cmd, "notarget") == 0)
+		Cmd_Notarget_f (ent);
+	else if (Q_stricmp (cmd, "noclip") == 0)
+		Cmd_Noclip_f (ent);
+	else if (Q_stricmp (cmd, "inven") == 0)
+		Cmd_Inven_f (ent);
+	else if (Q_stricmp (cmd, "invnext") == 0)
+		SelectNextItem (ent, -1);
+	else if (Q_stricmp (cmd, "invprev") == 0)
+		SelectPrevItem (ent, -1);
+	else if (Q_stricmp (cmd, "invnextw") == 0)
+		SelectNextItem (ent, IT_WEAPON);
+	else if (Q_stricmp (cmd, "invprevw") == 0)
+		SelectPrevItem (ent, IT_WEAPON);
+	else if (Q_stricmp (cmd, "invnextp") == 0)
+		SelectNextItem (ent, IT_POWERUP);
+	else if (Q_stricmp (cmd, "invprevp") == 0)
+		SelectPrevItem (ent, IT_POWERUP);
+	else if (Q_stricmp (cmd, "invuse") == 0)
+		Cmd_InvUse_f (ent);
+	else if (Q_stricmp (cmd, "invdrop") == 0)
+		Cmd_InvDrop_f (ent);
+	else if (Q_stricmp (cmd, "weapprev") == 0)
+		Cmd_WeapPrev_f (ent);
+	else if (Q_stricmp (cmd, "weapnext") == 0)
+		Cmd_WeapNext_f (ent);
+	else if (Q_stricmp (cmd, "weaplast") == 0)
+		Cmd_WeapLast_f (ent);
+	else if (Q_stricmp (cmd, "kill") == 0)
+		Cmd_Kill_f (ent);
+	else if (Q_stricmp (cmd, "putaway") == 0)
+		Cmd_PutAway_f (ent);
+	else if (Q_stricmp (cmd, "wave") == 0)
+		Cmd_Wave_f (ent);
 	else if (Q_stricmp(cmd, "playerlist") == 0)
 		Cmd_PlayerList_f(ent);
 	else if (Q_stricmp(cmd, "drink_health") == 0) {
 		DrinkHealth(ent);
 	}
 	else if (Q_stricmp(cmd, "getsouls") == 0) {
-		if(atoi(gi.argv(1)) > 0)
+		if (atoi(gi.argv(1)) > 0)
 			ent->client->pers.souls += atoi(gi.argv(1));
 		else
 			ent->client->pers.souls += 1000;

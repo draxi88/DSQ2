@@ -57,9 +57,9 @@ Misc functions
 */
 void VelocityForDamage (int damage, vec3_t v)
 {
-	v[0] = 100.0 * crandom();
-	v[1] = 100.0 * crandom();
-	v[2] = 200.0 + 100.0 * random();
+	v[0] = 100.0f * crandom();
+	v[1] = 100.0f * crandom();
+	v[2] = 200.0f + 100.0f * random();
 
 	if (damage < 50)
 		VectorScale (v, 0.7, v);
@@ -142,7 +142,7 @@ void ThrowGib (edict_t *self, char *gibname, int damage, int type)
 
 	gib = G_Spawn();
 
-	VectorScale (self->size, 0.5, size);
+	VectorScale (self->size, 0.5f, size);
 	VectorAdd (self->absmin, size, origin);
 	gib->s.origin[0] = origin[0] + crandom() * size[0];
 	gib->s.origin[1] = origin[1] + crandom() * size[1];
@@ -159,12 +159,12 @@ void ThrowGib (edict_t *self, char *gibname, int damage, int type)
 	{
 		gib->movetype = MOVETYPE_TOSS;
 		gib->touch = gib_touch;
-		vscale = 0.5;
+		vscale = 0.5f;
 	}
 	else
 	{
 		gib->movetype = MOVETYPE_BOUNCE;
-		vscale = 1.0;
+		vscale = 1.0f;
 	}
 
 	VelocityForDamage (damage, vd);
@@ -205,12 +205,12 @@ void ThrowHead (edict_t *self, char *gibname, int damage, int type)
 	{
 		self->movetype = MOVETYPE_TOSS;
 		self->touch = gib_touch;
-		vscale = 0.5;
+		vscale = 0.5f;
 	}
 	else
 	{
 		self->movetype = MOVETYPE_BOUNCE;
-		vscale = 1.0;
+		vscale = 1.0f;
 	}
 
 	VelocityForDamage (damage, vd);
@@ -507,7 +507,7 @@ void SP_viewthing(edict_t *ent)
 	VectorSet (ent->maxs, 16, 16, 32);
 	ent->s.modelindex = gi.modelindex ("models/objects/banner/tris.md2");
 	gi.linkentity (ent);
-	ent->nextthink = level.time + 0.5;
+	ent->nextthink = level.time + 0.5f;
 	ent->think = TH_viewthing;
 	return;
 }
@@ -751,21 +751,21 @@ void func_explosive_explode (edict_t *self, edict_t *inflictor, edict_t *attacke
 	int		mass;
 
 	// bmodel origins are (0 0 0), we need to adjust that here
-	VectorScale (self->size, 0.5, size);
+	VectorScale (self->size, 0.5f, size);
 	VectorAdd (self->absmin, size, origin);
 	VectorCopy (origin, self->s.origin);
 
 	self->takedamage = DAMAGE_NO;
 
 	if (self->dmg)
-		T_RadiusDamage (self, attacker, self->dmg, NULL, self->dmg+40, MOD_EXPLOSIVE);
+		T_RadiusDamage (self, attacker, (float)self->dmg, NULL, (float)(self->dmg+40), MOD_EXPLOSIVE);
 
 	VectorSubtract (self->s.origin, inflictor->s.origin, self->velocity);
 	VectorNormalize (self->velocity);
 	VectorScale (self->velocity, 150, self->velocity);
 
 	// start chunks towards the center
-	VectorScale (size, 0.5, size);
+	VectorScale (size, 0.5f, size);
 
 	mass = self->mass;
 	if (!mass)
@@ -890,13 +890,13 @@ void barrel_explode (edict_t *self)
 	float	spd;
 	vec3_t	save;
 
-	T_RadiusDamage (self, self->activator, self->dmg, NULL, self->dmg+40, MOD_BARREL);
+	T_RadiusDamage (self, self->activator, (float)self->dmg, NULL, (float)(self->dmg+40), MOD_BARREL);
 
 	VectorCopy (self->s.origin, save);
-	VectorMA (self->absmin, 0.5, self->size, self->s.origin);
+	VectorMA (self->absmin, 0.5f, self->size, self->s.origin);
 
 	// a few big chunks
-	spd = 1.5 * (float)self->dmg / 200.0;
+	spd = 1.5f * (float)self->dmg / 200.0f;
 	org[0] = self->s.origin[0] + crandom() * self->size[0];
 	org[1] = self->s.origin[1] + crandom() * self->size[1];
 	org[2] = self->s.origin[2] + crandom() * self->size[2];
@@ -907,7 +907,7 @@ void barrel_explode (edict_t *self)
 	ThrowDebris (self, "models/objects/debris1/tris.md2", spd, org);
 
 	// bottom corners
-	spd = 1.75 * (float)self->dmg / 200.0;
+	spd = 1.75f * (float)self->dmg / 200.0f;
 	VectorCopy (self->absmin, org);
 	ThrowDebris (self, "models/objects/debris3/tris.md2", spd, org);
 	VectorCopy (self->absmin, org);
@@ -922,7 +922,7 @@ void barrel_explode (edict_t *self)
 	ThrowDebris (self, "models/objects/debris3/tris.md2", spd, org);
 
 	// a bunch of little chunks
-	spd = 2 * self->dmg / 200;
+	spd = 2.0f * (float)self->dmg / 200.0f;
 	org[0] = self->s.origin[0] + crandom() * self->size[0];
 	org[1] = self->s.origin[1] + crandom() * self->size[1];
 	org[2] = self->s.origin[2] + crandom() * self->size[2];
@@ -1332,7 +1332,7 @@ void misc_viper_bomb_touch (edict_t *self, edict_t *other, cplane_t *plane, csur
 	G_UseTargets (self, self->activator);
 
 	self->s.origin[2] = self->absmin[2] + 1;
-	T_RadiusDamage (self, self, self->dmg, NULL, self->dmg+40, MOD_BOMB);
+	T_RadiusDamage (self, self, (float)self->dmg, NULL, (float)(self->dmg+40), MOD_BOMB);
 	BecomeExplosion2 (self);
 }
 
@@ -1345,9 +1345,9 @@ void misc_viper_bomb_prethink (edict_t *self)
 
 	diff = self->timestamp - level.time;
 	if (diff < -1.0)
-		diff = -1.0;
+		diff = -1.0f;
 
-	VectorScale (self->moveinfo.dir, 1.0 + diff, v);
+	VectorScale (self->moveinfo.dir, 1.0f + diff, v);
 	v[2] = diff;
 
 	diff = self->s.angles[2];
@@ -1636,7 +1636,7 @@ static void func_clock_reset (edict_t *self)
 	if (self->spawnflags & 1)
 	{
 		self->health = 0;
-		self->wait = self->count;
+		self->wait = (float)self->count;
 	}
 	else if (self->spawnflags & 2)
 	{
@@ -1787,12 +1787,13 @@ void teleporter_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_
 
 	if (!other->client)
 		return;
-	dest = G_Find(NULL, FOFS(targetname), self->target);
+	dest = G_Find (NULL, FOFS(targetname), self->target);
 	if (!dest)
 	{
-		gi.dprintf("Couldn't find destination\n");
+		gi.dprintf ("Couldn't find destination\n");
 		return;
 	}
+
 	// unlink to make sure it can't possibly interfere with KillBox
 	gi.unlinkentity (other);
 
@@ -1811,9 +1812,7 @@ void teleporter_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_
 
 	// set angles
 	for (i=0 ; i<3 ; i++)
-	{
 		other->client->ps.pmove.delta_angles[i] = ANGLE2SHORT(dest->s.angles[i] - other->client->resp.cmd_angles[i]);
-	}
 
 	VectorClear (other->s.angles);
 	VectorClear (other->client->ps.viewangles);
@@ -1868,21 +1867,20 @@ void bonfire_touch(edict_t *self, edict_t *other, cplane_t *plane, csurface_t *s
 
 	other->client->pers.last_bonfire = self;
 }
-
 /*QUAKED misc_teleporter_dest (1 0 0) (-32 -32 -24) (32 32 -16)
 Point teleporters at these.
 */
-void SP_misc_teleporter_dest (edict_t *ent)
+void SP_misc_teleporter_dest(edict_t *ent)
 {
 	if (strcmp(ent->classname, "info_player_start") == 0) { //DSQ2
 		ent->touch = bonfire_touch;
 	}
-	gi.setmodel (ent, "models/objects/dmspot/tris.md2");
+	gi.setmodel(ent, "models/objects/dmspot/tris.md2");
 	ent->s.skinnum = 0;
 	ent->solid = SOLID_BBOX;
-//	ent->s.effects |= EF_FLIES;
-	VectorSet (ent->mins, -32, -32, -24);
-	VectorSet (ent->maxs, 32, 32, -16);
-	gi.linkentity (ent);
+	//	ent->s.effects |= EF_FLIES;
+	VectorSet(ent->mins, -32, -32, -24);
+	VectorSet(ent->maxs, 32, 32, -16);
+	gi.linkentity(ent);
 }
 

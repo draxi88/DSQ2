@@ -344,7 +344,6 @@ void MainMenuOpen(edict_t *ent)
 		selected = ent->client->menu->cur;
 	else
 		selected = -1;
-
 	int distance = VectorDistance(ent->client->pers.last_bonfire->s.origin, ent->s.origin);
 	if (distance > 70) {
 		gi.cprintf(ent, PRINT_HIGH, "Not at a bonfire!\n");
@@ -370,8 +369,10 @@ void WeaponMenuOpen(edict_t *ent, pmenuhnd_t *p)
 {
 	gitem_t *it;
 	int i = 3;
+
 	it = FindItemByClassname("weapon_blaster");
-	sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_BLASTER + (BlasterLevel * it->level));
+	DMG_BLASTER = START_BLASTER + (BlasterLevel * ent->client->pers.levels[ITEM_INDEX(it)]);
+	sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_BLASTER);
 	weaponmenu[2].text = it->menuname;
 	weaponmenu[2].SelectFunc = UpgradeWeapon;
 	
@@ -379,7 +380,8 @@ void WeaponMenuOpen(edict_t *ent, pmenuhnd_t *p)
 	index = ITEM_INDEX(FindItemByClassname("weapon_shotgun"));
 	if (ent->client->pers.inventory[index]){
 		it = &itemlist[index];
-		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_SHOTGUN + ShotgunLevel * it->level);
+		DMG_SHOTGUN = START_SHOTGUN + (ShotgunLevel * ent->client->pers.levels[ITEM_INDEX(it)]);
+		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_SHOTGUN);
 		weaponmenu[i].text = it->menuname;
 		weaponmenu[i].SelectFunc = UpgradeWeapon;
 		i++;
@@ -387,7 +389,8 @@ void WeaponMenuOpen(edict_t *ent, pmenuhnd_t *p)
 	index = ITEM_INDEX(FindItemByClassname("weapon_supershotgun"));
 	if (ent->client->pers.inventory[index]) {
 		it = &itemlist[index];
-		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_SHOTGUN + ShotgunLevel * it->level);
+		DMG_SSHOTGUN = START_SSHOTGUN + (SupershotgunLevel * ent->client->pers.levels[ITEM_INDEX(it)]);
+		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_SSHOTGUN);
 		weaponmenu[i].text = it->menuname;
 		weaponmenu[i].SelectFunc = UpgradeWeapon;
 		i++;
@@ -395,7 +398,8 @@ void WeaponMenuOpen(edict_t *ent, pmenuhnd_t *p)
 	index = ITEM_INDEX(FindItemByClassname("weapon_machinegun"));
 	if (ent->client->pers.inventory[index]) {
 		it = &itemlist[index];
-		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_BULLET + MachinegunLevel * it->level);
+		DMG_MACHINEGUN = START_MACHINEGUN + (MachinegunLevel * ent->client->pers.levels[ITEM_INDEX(it)]);
+		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_MACHINEGUN);
 		weaponmenu[i].text = it->menuname;
 		weaponmenu[i].SelectFunc = UpgradeWeapon;
 		i++;
@@ -403,7 +407,8 @@ void WeaponMenuOpen(edict_t *ent, pmenuhnd_t *p)
 	index = ITEM_INDEX(FindItemByClassname("weapon_supershotgun"));
 	if (ent->client->pers.inventory[index]) {
 		it = &itemlist[index];
-		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_BULLET + ChaingunLevel * it->level);
+		DMG_CHAINGUN = START_CHAINGUN + (ChaingunLevel * ent->client->pers.levels[ITEM_INDEX(it)]);
+		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_CHAINGUN);
 		weaponmenu[i].text = it->menuname;
 		weaponmenu[i].SelectFunc = UpgradeWeapon;
 		i++;
@@ -411,7 +416,8 @@ void WeaponMenuOpen(edict_t *ent, pmenuhnd_t *p)
 	index = ITEM_INDEX(FindItemByClassname("ammo_grenades"));
 	if (ent->client->pers.inventory[index]) {
 		it = &itemlist[index];
-		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_GRENADE + GrenadeLevel * it->level);
+		DMG_GRENADE = START_GRENADE + (GrenadeLevel * ent->client->pers.levels[ITEM_INDEX(it)]);
+		sprintf(it->menuname, "%-17sdmg: %3i", "GRENADES", DMG_GRENADE);
 		weaponmenu[i].text = it->menuname;
 		weaponmenu[i].SelectFunc = UpgradeWeapon;
 		i++;
@@ -419,7 +425,8 @@ void WeaponMenuOpen(edict_t *ent, pmenuhnd_t *p)
 	index = ITEM_INDEX(FindItemByClassname("weapon_grenadelauncher"));
 	if (ent->client->pers.inventory[index]) {
 		it = &itemlist[index];
-		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_GRENADE + GrenadeLevel * it->level);
+		DMG_GLAUNCHER = START_GLAUNCHER + (GLauncherLevel * ent->client->pers.levels[ITEM_INDEX(it)]);
+		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_GLAUNCHER);
 		weaponmenu[i].text = it->menuname;
 		weaponmenu[i].SelectFunc = UpgradeWeapon;
 		i++;
@@ -427,7 +434,8 @@ void WeaponMenuOpen(edict_t *ent, pmenuhnd_t *p)
 	index = ITEM_INDEX(FindItemByClassname("weapon_rocketlauncher"));
 	if (ent->client->pers.inventory[index]) {
 		it = &itemlist[index];
-		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_ROCKET + RocketLevel * it->level);
+		DMG_ROCKET = START_ROCKET + (RocketLevel * ent->client->pers.levels[ITEM_INDEX(it)]);
+		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_ROCKET);
 		weaponmenu[i].text = it->menuname;
 		weaponmenu[i].SelectFunc = UpgradeWeapon;
 		i++;
@@ -435,7 +443,8 @@ void WeaponMenuOpen(edict_t *ent, pmenuhnd_t *p)
 	index = ITEM_INDEX(FindItemByClassname("weapon_hyperblaster"));
 	if (ent->client->pers.inventory[index]) {
 		it = &itemlist[index];
-		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_HYPERBLASTER + HyperblasterLevel * it->level);
+		DMG_HYPERBLASTER = START_HYPERBLASTER + (HyperblasterLevel * ent->client->pers.levels[ITEM_INDEX(it)]);
+		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_HYPERBLASTER);
 		weaponmenu[i].text = it->menuname;
 		weaponmenu[i].SelectFunc = UpgradeWeapon;
 		i++;
@@ -443,7 +452,8 @@ void WeaponMenuOpen(edict_t *ent, pmenuhnd_t *p)
 	index = ITEM_INDEX(FindItemByClassname("weapon_railgun"));
 	if (ent->client->pers.inventory[index]) {
 		it = &itemlist[index];
-		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_RAILGUN + RailgunLevel * it->level);
+		DMG_RAILGUN = START_RAILGUN + (RailgunLevel * ent->client->pers.levels[ITEM_INDEX(it)]);
+		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_RAILGUN);
 		weaponmenu[i].text = it->menuname;
 		weaponmenu[i].SelectFunc = UpgradeWeapon;
 		i++;
@@ -451,7 +461,8 @@ void WeaponMenuOpen(edict_t *ent, pmenuhnd_t *p)
 	index = ITEM_INDEX(FindItemByClassname("weapon_bfg"));
 	if (ent->client->pers.inventory[index]) {
 		it = &itemlist[index];
-		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_BFG + BFGLevel * it->level);
+		DMG_BFG = START_BFG + (BFGLevel * ent->client->pers.levels[ITEM_INDEX(it)]);
+		sprintf(it->menuname, "%-17sdmg: %3i", it->pickup_name, DMG_BFG);
 		weaponmenu[i].text = it->menuname;
 		weaponmenu[i].SelectFunc = UpgradeWeapon;
 		i++;
@@ -469,21 +480,21 @@ void ArmorMenuOpen(edict_t *ent, pmenuhnd_t *p)
 	int i = 2;
 	if (ent->client->pers.JacketArmor) {
 		it = FindItem("Jacket Armor");
-		sprintf(it->menuname, "Jacket Armor (level %i)", it->level + 1);
+		sprintf(it->menuname, "Jacket Armor (level %i)", ent->client->pers.levels[ITEM_INDEX(it)] + 1);
 		weaponmenu[i].text = it->menuname;
 		weaponmenu[i].SelectFunc = UpgradeWeapon;
 		i++;
 	}
 	if (ent->client->pers.CombatArmor) {
 		it = FindItem("Combat Armor");
-		sprintf(it->menuname, "Combat Armor (level %i)", it->level + 1);
+		sprintf(it->menuname, "Combat Armor (level %i)", ent->client->pers.levels[ITEM_INDEX(it)] + 1);
 		weaponmenu[i].text = it->menuname;
 		weaponmenu[i].SelectFunc = UpgradeWeapon;
 		i++;
 	}
 	if (ent->client->pers.BodyArmor) {
 		it = FindItem("Body Armor");
-		sprintf(it->menuname, "Body Armor (level %i)",  it->level + 1);
+		sprintf(it->menuname, "Body Armor (level %i)", ent->client->pers.levels[ITEM_INDEX(it)] + 1);
 		weaponmenu[i].text = it->menuname;
 		weaponmenu[i].SelectFunc = UpgradeWeapon;
 		i++;

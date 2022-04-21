@@ -8,6 +8,7 @@
 #define MachinegunLevel		2
 #define ChaingunLevel		2
 #define GrenadeLevel		5
+#define GLauncherLevel		5
 #define RocketLevel			5
 #define HyperblasterLevel	2
 #define RailgunLevel		5
@@ -24,8 +25,8 @@ int xplevel[99];
 //HEALTH MONSTERS
 #define HEALTH_M_BERSERK 400
 #define HEALTH_M_BOSS2 10000
-#define HEALTH_M_BOSS31 15000
-#define HEALTH_M_BOSS32 15000
+#define HEALTH_M_JORG 15000
+#define HEALTH_M_MAKRON 15000
 #define HEALTH_M_BRAIN 500
 #define HEALTH_M_CHICK 400
 #define HEALTH_M_FLIPPER 100
@@ -51,12 +52,26 @@ int xplevel[99];
 #define DMG_BLASTER		ent->client->pers.dmg_blaster
 #define DMG_SHOTGUN		ent->client->pers.dmg_shotgun
 #define DMG_SSHOTGUN	ent->client->pers.dmg_sshotgun
-#define DMG_BULLET		ent->client->pers.dmg_bullet
+#define DMG_MACHINEGUN	ent->client->pers.dmg_machinegun
+#define DMG_CHAINGUN	ent->client->pers.dmg_chaingun
 #define DMG_GRENADE		ent->client->pers.dmg_grenade
+#define DMG_GLAUNCHER	ent->client->pers.dmg_glauncher
 #define DMG_ROCKET		ent->client->pers.dmg_rocket
 #define DMG_HYPERBLASTER ent->client->pers.dmg_hyperblaster
 #define DMG_RAILGUN		ent->client->pers.dmg_railgun
 #define DMG_BFG			ent->client->pers.dmg_bfg
+
+#define START_BLASTER		10
+#define START_SHOTGUN		4
+#define START_SSHOTGUN		6
+#define START_MACHINEGUN	8
+#define START_CHAINGUN		8
+#define START_GRENADE		120
+#define START_GLAUNCHER		120
+#define START_ROCKET		100
+#define START_HYPERBLASTER	15
+#define START_RAILGUN		100
+#define START_BFG			200
 
 
 #ifndef ENTITY_SET

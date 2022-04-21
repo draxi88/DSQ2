@@ -17,27 +17,150 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-	
-// q_shared.h -- included first by ALL program modules
 
-#ifdef _WIN32
-// unknown pragmas are SUPPOSED to be ignored, but....
-#pragma warning(disable : 4244)     // MIPS
-#pragma warning(disable : 4136)     // X86
-#pragma warning(disable : 4051)     // ALPHA
+#ifndef _QSHARED_H
 
-#pragma warning(disable : 4018)     // signed/unsigned mismatch
-#pragma warning(disable : 4305)		// truncation from const double to float
-
-#endif
-
-#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stddef.h>
+#include <string.h>
 #include <time.h>
+#include <ctype.h>
+#ifndef NO_ZLIB
+#ifdef _WIN32
+//#define ZEXPORT __cdecl
+#endif
+#if defined(_WIN32) && defined(_DEBUG)
+	#define ZLIB_WINAPI
+#endif
+#include <zlib.h>
+#ifdef _WIN32
+#undef ZEXPORT
+#endif
+#endif
+
+//for broken Makefiles?
+#ifdef __linux__
+#ifndef LINUX
+#define LINUX 1
+#endif
+#endif
+
+// q_shared.h -- included first by ALL program modules
+
+#ifdef _WIN32
+#ifdef _MSC_VER
+// unknown pragmas are SUPPOSED to be ignored, but....
+//#pragma warning(disable : 4244)     // MIPS
+//#pragma warning(disable : 4136)     // X86
+//#pragma warning(disable : 4051)     // ALPHA
+
+//#pragma warning(disable : 4244)		// truncation
+#pragma warning(disable : 4018)     // signed/unsigned mismatch
+//#pragma warning(disable : 4305)		// truncation from const double to float
+
+#pragma warning(disable : 4096)		// __cdecl must be used with '...'*/
+#pragma warning(disable : 4142)		//benign redefinition
+
+// [JoshK] Disabling some more warnings from level 4
+#pragma warning(disable : 4100)    // Unreferenced formal parameter
+#pragma warning(disable : 4127)    // Conditional expression is constant
+
+#pragma warning(2 : 4189 4210 4389)	// useful warnings
+
+//"off by default" warnings
+#pragma warning(3 : 4056)
+#pragma warning(3 : 4191)
+#pragma warning(3 : 4254)
+#pragma warning(3 : 4287)
+#pragma warning(3 : 4296)
+#pragma warning(3 : 4514)
+#pragma warning(3 : 4545)
+#pragma warning(3 : 4546)
+#pragma warning(3 : 4547)
+#pragma warning(3 : 4548)
+#pragma warning(3 : 4549)
+#pragma warning(3 : 4555)
+#pragma warning(3 : 4905)
+#pragma warning(3 : 4906)
+#pragma warning(3 : 4245)
+#endif
+//#pragma warning(disable: 4996)		// deprecated functions
+
+#pragma intrinsic(memcmp)
+//#pragma intrinsic(memset)
+
+#if _MSC_VER >= 1400
+	#define NORETURN __declspec(noreturn)
+	#define RESTRICT __declspec(restrict)
+	#define NOALIAS __declspec(noalias)
+#else
+	#define RESTRICT
+	#define NORETURN
+	#define NOALIAS
+	#define sqrtf (float)sqrt
+	#define ceilf (float)ceil
+#endif
+
+#define alloca _alloca
+#define snprintf _snprintf
+#define vsnprintf _vsnprintf
+#define	Q_strlwr _strlwr
+//#define Q_snprintf _snprintf
+#define Q_vsnprintf _vsnprintf
+#ifndef _M_AMD64
+	#define Q_stricmp _strcmpi	//odd, amd64 libc is missing this...
+	#define Q_strncasecmp _strnicmp
+#endif
+#define strdup _strdup
+#ifndef fileno
+#define fileno _fileno
+#endif
+#define strlwr _strlwr
+#define filelength _filelength
+#define stricmp _stricmp
+#define putenv _putenv
+#define EXPORT __cdecl
+#define IMPORT __cdecl
+//#if !defined _M_AMD64
+ //#define DEBUGBREAKPOINT __asm int 3
+//#else
+ //#define DEBUGBREAKPOINT DebugBreak
+//#endif
+#define __attribute__(x) 
+#define PACKED_STRUCT
+typedef __int32 int32;
+typedef __int16 int16;
+typedef __int64 int64;
+typedef unsigned __int32 uint32;
+typedef unsigned __int16 uint16;
+typedef unsigned __int64 uint64;
+#else /* NON-WIN32 */
+#include <stdint.h>
+#define WINAPI
+#define RESTRICT
+#define NORETURN
+#define NOALIAS
+typedef int32_t int32;
+typedef int16_t int16;
+typedef int64_t int64;
+typedef uint32_t uint32;
+typedef uint16_t uint16;
+typedef uint64_t uint64;
+#define PACKED_STRUCT __attribute__((packed))
+//XXX: are these portable enough on non-win32?
+#define Q_stricmp strcasecmp
+#define Q_strncasecmp strncasecmp
+#define EXPORT
+#define IMPORT
+void Q_strlwr (char *str);
+int Q_vsnprintf (char *buff, size_t len, const char *fmt, va_list va);
+//int Q_snprintf (char *buff, size_t len, const char *fmt, ...);
+
+#endif
 
 #if (defined _M_IX86 || defined __i386__) && !defined C_ONLY && !defined __sun__
 #define id386	1
@@ -51,13 +174,57 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define idaxp	0
 #endif
 
+#ifdef  NDEBUG
+#define Q_assert(exp)     ((void)0)
+#else
+void _Q_assert (char *expression, char *function, uint32 line);
+#define Q_assert(exp) (void)( (exp) || (_Q_assert(#exp, __FILE__, __LINE__), 0) )
+#endif
+
 typedef unsigned char 		byte;
 typedef enum {false, true}	qboolean;
 
+//r1: set this to 1 if you have a stupid endian thingy
+#define Q_BIGENDIAN 0
+
+//#define random()	(randomMT() / ((float)0xFFFFFFFFU))
+
+//32 bit float precision caps this to 0.00000000023283064f which gives max result of .99999998407391880
+#define	random()	((randomMT() * 0.00000000023283064f))
+
+
+#define	frand()		(random())
+#define	crand()		(((int)randomMT() - 0x7FFFFFFF) * 0.000000000465661287307739257812f)
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+
+#ifdef _WIN32
+#define FLOAT2INTCAST(f)(*((int32 *)(&f)))
+#define FLOAT2UINTCAST(f)(*((uint32 *)(&f)))
+#define FLOAT_LT_ZERO(f) (FLOAT2UINTCAST(f) > 0x80000000U)
+#define FLOAT_LE_ZERO(f) (FLOAT2INTCAST(f) <= 0)
+#define FLOAT_GT_ZERO(f) (FLOAT2INTCAST(f) > 0)
+#define FLOAT_GE_ZERO(f) (FLOAT2UINTCAST(f) <= 0x80000000U)
+#define	FLOAT_EQ_ZERO(f) (FLOAT2INTCAST(f) == 0)
+#define	FLOAT_NE_ZERO(f) (FLOAT2INTCAST(f) != 0)
+#else
+//gcc breaks ieee compatibility with -ffast-math? i guess since these break horribly on linux
+#define	FLOAT_LT_ZERO(f) ((f) < 0)
+#define FLOAT_LE_ZERO(f) ((f) <= 0)
+#define FLOAT_GT_ZERO(f) ((f) > 0)
+#define FLOAT_GE_ZERO(f) ((f) >= 0)
+#define	FLOAT_EQ_ZERO(f) ((f) == 0)
+#define	FLOAT_NE_ZERO(f) ((f) != 0)
+#endif
+
+//terminating strncpy
+#define Q_strncpy(dst, src, len) \
+do { \
+	strncpy ((dst), (src), (len)); \
+	(dst)[(len)] = 0; \
+} while (0)
 
 
 // angle indexes
@@ -67,7 +234,7 @@ typedef enum {false, true}	qboolean;
 
 #define	MAX_STRING_CHARS	1024	// max length of a string passed to Cmd_TokenizeString
 #define	MAX_STRING_TOKENS	80		// max tokens resulting from Cmd_TokenizeString
-#define	MAX_TOKEN_CHARS		128		// max length of an individual token
+#define	MAX_TOKEN_CHARS		512		// max length of an individual token
 
 #define	MAX_QPATH			64		// max length of a quake game pathname
 #define	MAX_OSPATH			128		// max length of a filesystem pathname
@@ -91,11 +258,13 @@ typedef enum {false, true}	qboolean;
 #define	PRINT_HIGH			2		// critical messages
 #define	PRINT_CHAT			3		// chat messages
 
-
-
-#define	ERR_FATAL			0		// exit the entire game with a popup window
-#define	ERR_DROP			1		// print to console and disconnect from game
-#define	ERR_DISCONNECT		2		// don't kill server
+#define	ERR_FATAL		0		// exit the entire game with a popup window
+#define	ERR_DROP		1		// print to console and disconnect from game
+#define	ERR_DISCONNECT	2		// not an error, just a normal exit
+#define	ERR_GAME		3		// r1ch: game dll error, allow special handling
+#define	ERR_NET			4		// r1ch: network error, don't use net functions after seeing
+#define	ERR_DIE			5		// r1ch: die ASAP. memory corrupt or other super-fatal
+#define	ERR_HARD		6		// r1ch: don't try to auto restart from this error
 
 #define	PRINT_ALL			0
 #define PRINT_DEVELOPER		1		// only print when "developer 1"
@@ -113,6 +282,14 @@ MULTICAST_PHS_R,
 MULTICAST_PVS_R
 } multicast_t;
 
+int16 ShortSwap (int16 l);
+int32 LongSwap (int32 l);
+
+#if !Q_BIGENDIAN
+#define LittleShort(l) (l)
+#define LittleLong(l) (l)
+#define LittleFloat(l) (l)
+#endif
 
 /*
 ==============================================================
@@ -131,8 +308,11 @@ typedef	int	fixed8_t;
 typedef	int	fixed16_t;
 
 #ifndef M_PI
-#define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
+#define M_PI			3.14159265358979323846F		// matches value in gcc v2 math.h
 #endif
+
+#define	M_PI_DIV_2		1.570796326794896619230F
+#define	M_PI2_DIV_360	0.01745329251994329576922F
 
 struct cplane_s;
 
@@ -145,45 +325,103 @@ extern vec3_t vec3_origin;
 // microsoft's fabs seems to be ungodly slow...
 //float Q_fabs (float f);
 //#define	fabs(f) Q_fabs(f)
-#if !defined C_ONLY && !defined __linux__ && !defined __sgi
-extern long Q_ftol( float f );
+//extern int sse2_enabled;
+#if !defined C_ONLY && !defined __linux__ && !defined __sgi && !defined SSE2 && !defined __FreeBSD__
+//extern void __cdecl Q_sseinit (void);
+void __cdecl Q_ftol2( float f, int *out );
+int __cdecl Q_ftol( float f );
+extern void __cdecl Q_fastfloats (float *f, int *out);
+//extern void __cdecl Q_ftolsse( float f, int *out );
+//the overhead of using function pointer offsets any savings of using sse2 :/
 #else
-#define Q_ftol( f ) ( long ) (f)
+int Q_ftol( float f);
+void Q_fastfloats(float *f, int *out);
+void Q_ftol2( float f, int *out );
 #endif
+
+//this is a function instead of a macro for the asm since some compilers are scared by inline asm
+//and disable some optimizations.
+void _Q_DEBUGBREAKPOINT (void);
+
+typedef union
+{
+	int		i[3];
+	float	f[3];
+} vectorhack_t;
 
 #define DotProduct(x,y)			(x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
 #define VectorSubtract(a,b,c)	(c[0]=a[0]-b[0],c[1]=a[1]-b[1],c[2]=a[2]-b[2])
 #define VectorAdd(a,b,c)		(c[0]=a[0]+b[0],c[1]=a[1]+b[1],c[2]=a[2]+b[2])
-#define VectorCopy(a,b)			(b[0]=a[0],b[1]=a[1],b[2]=a[2])
-#define VectorClear(a)			(a[0]=a[1]=a[2]=0)
+#define VectorCopy(src,dst)		(dst[0]=src[0],dst[1]=src[1],dst[2]=src[2])
+#define FastVectorCopy(src,dst)		*(vectorhack_t *)&(dst) = *(vectorhack_t *)&(src)
+//#define VectorClear(a)			(a[0]=a[1]=a[2]=0)
+//#define VectorClear(a)			(memset ((&a), 0, sizeof((a))))
+#define VectorClear(a)			*(int *)&(a)[0] = 0, *(int *)&(a)[1] = 0, *(int *)&(a)[2] = 0
 #define VectorNegate(a,b)		(b[0]=-a[0],b[1]=-a[1],b[2]=-a[2])
 #define VectorSet(v, x, y, z)	(v[0]=(x), v[1]=(y), v[2]=(z))
+#define VectorAverage(a,b,o)	((o)[0]=((a)[0]+(b)[0])*0.5f,(o)[1]=((a)[1]+(b)[1])*0.5f,(o)[2]=((a)[2]+(b)[2])*0.5f)
 
-void VectorMA (vec3_t veca, float scale, vec3_t vecb, vec3_t vecc);
+//r1: macorize
+#define VectorCompare(v1,v2)	(v1[0]==v2[0] && v1[1]==v2[1] && v1[2]== v2[2])
+#define CrossProduct(v1,v2,c)	(c[0]=v1[1]*v2[2]-v1[2]*v2[1],c[1]=v1[2]*v2[0]-v1[0]*v2[2],c[2]=v1[0]*v2[1]-v1[1]*v2[0])
+#define VectorInverse(v)		(v[0]=-v[0],v[1]=-v[1],v[2]=-v[2])
+#define VectorScale(in,s,out)	(out[0]=in[0]*(float)(s),out[1]=in[1]*(float)(s),out[2]=in[2]*(float)(s))
+#define VectorMA(a,s,b,c)		(c[0]=a[0]+(float)(s)*b[0],c[1]=a[1]+(float)(s)*b[1],c[2]=a[2]+(float)(s)*b[2])
+#define ClearBounds(mins,maxs)	(mins[0]=mins[1]=mins[2]=99999,maxs[0]=maxs[1]=maxs[2]=-99999)
+
+//performs comparison on encoded byte differences - pointless sending 0.00 -> 0.01 if both end up as 0 on net.
+#define Vec_ByteCompare(v1,v2) \
+	((int)(v1[0]*4)==(int)(v2[0]*4) && \
+	(int)(v1[1]*4)==(int)(v2[1]*4) && \
+	(int)(v1[2]*4) == (int)(v2[2]*4))
+
+#define Vec_RoughCompare(v1,v2) \
+	(*(int *)&(v1[0])== *(int *)&(v2[0]) && \
+	*(int *)&(v1[1]) == *(int *)&(v2[1]) && \
+	*(int *)&(v1[2]) == *(int *)&(v2[2]))
+
+#define Float_ByteCompare(v1,v2) \
+	((int)((v1)*8)==((int)((v2)*8)))
+
+#define Float_RoughCompare(v1,v2) \
+	(*(int *)&(v1) == *(int *)&(v2))
+
+#define Float_AngleCompare(v1,v2) \
+	(((int)((v1)*256/360) & 255) == ((int)((v2)*256/360) & 255))
+
+//to keep ms vc auto complete happy
+#ifdef UNDEFINED
+void CrossProduct (vec3_t v1, vec3_t v2, vec3_t cross);
+int VectorCompare (vec3_t v1, vec3_t v2);
+void VectorInverse (vec3_t v);
+void VectorScale (vec3_t in, vec_t scale, vec3_t /*@out@*/out);
+void VectorMA (vec3_t veca, float scale, vec3_t vecb, vec3_t /*@out@*/vecc);
+void ClearBounds (vec3_t mins, vec3_t maxs);
+#endif
+
+//void VectorMA (vec3_t veca, float scale, vec3_t vecb, vec3_t vecc);
 
 // just in case you do't want to use the macros
 vec_t _DotProduct (vec3_t v1, vec3_t v2);
 void _VectorSubtract (vec3_t veca, vec3_t vecb, vec3_t out);
 void _VectorAdd (vec3_t veca, vec3_t vecb, vec3_t out);
 void _VectorCopy (vec3_t in, vec3_t out);
-
-void ClearBounds (vec3_t mins, vec3_t maxs);
-void AddPointToBounds (vec3_t v, vec3_t mins, vec3_t maxs);
 int VectorDistance(vec3_t v1, vec3_t v2);
-int VectorCompare (vec3_t v1, vec3_t v2);
+
+void AddPointToBounds (vec3_t v, vec3_t mins, vec3_t maxs);
+
+
 vec_t VectorLength (vec3_t v);
-void CrossProduct (vec3_t v1, vec3_t v2, vec3_t cross);
 vec_t VectorNormalize (vec3_t v);		// returns vector length
-vec_t VectorNormalize2 (vec3_t v, vec3_t out);
-void VectorInverse (vec3_t v);
-void VectorScale (vec3_t in, vec_t scale, vec3_t out);
+vec_t VectorNormalize2 (vec3_t v, vec3_t /*@out@*/out);
+
 int Q_log2(int val);
 
 void R_ConcatRotations (float in1[3][3], float in2[3][3], float out[3][3]);
 void R_ConcatTransforms (float in1[3][4], float in2[3][4], float out[3][4]);
 
-void AngleVectors (vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);
-int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, struct cplane_s *plane);
+void AngleVectors (vec3_t angles, vec3_t /*@out@*//*@null@*/forward, vec3_t /*@out@*//*@null@*/right, vec3_t /*@out@*//*@null@*/up);
+int EXPORT BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, struct cplane_s *plane);
 float	anglemod(float a);
 float LerpAngle (float a1, float a2, float frac);
 
@@ -211,36 +449,48 @@ void RotatePointAroundVector( vec3_t dst, const vec3_t dir, const vec3_t point, 
 //=============================================
 
 char *COM_SkipPath (char *pathname);
-void COM_StripExtension (char *in, char *out);
+void COM_StripExtension (const char *in, char *out);
 void COM_FileBase (char *in, char *out);
-void COM_FilePath (char *in, char *out);
-void COM_DefaultExtension (char *path, char *extension);
+void COM_FilePath (const char *in, char *out);
+void COM_DefaultExtension (char *path, const char *extension);
 
-char *COM_Parse (char **data_p);
+const char *COM_Parse (const char **data_p);
 // data is an in/out parm, returns a parsed out token
 
-void Com_sprintf (char *dest, int size, char *fmt, ...);
+int Com_sprintf (char /*@out@*/*dest, int size, const char *fmt, ...) __attribute__ ((format (printf, 3, 4)));
 
 void Com_PageInMemory (byte *buffer, int size);
+
+int wildcardfit (char *wildcard, char *test);
+/* this function implements the UN*X wildcards and returns  */
+/* 0  if *wildcard does not match *test                     */
+/* 1  if *wildcard matches *test                            */
+
+#ifdef ANTICHEAT
+int Sys_GetAntiCheatAPI (void);
+#endif
 
 //=============================================
 
 // portable case insensitive compare
-int Q_stricmp (char *s1, char *s2);
-int Q_strcasecmp (char *s1, char *s2);
-int Q_strncasecmp (char *s1, char *s2, int n);
+#ifndef Q_stricmp
+int Q_stricmp (const char *s1, const char *s2);
+#endif
+
+#ifndef Q_strncasecmp
+int Q_strncasecmp (const char *s1, const char *s2, size_t n);
+#endif
 
 //=============================================
 
-short	BigShort(short l);
-short	LittleShort(short l);
-int		BigLong (int l);
-int		LittleLong (int l);
-float	BigFloat (float l);
+#if Q_BIGENDIAN
+int16	LittleShort(int16 l);
+int32		LittleLong (int32 l);
 float	LittleFloat (float l);
+#endif
 
 void	Swap_Init (void);
-char	*va(char *format, ...);
+char	*va(const char *format, ...) __attribute__ ((format (printf, 1, 2)));
 
 //=============================================
 
@@ -251,10 +501,15 @@ char	*va(char *format, ...);
 #define	MAX_INFO_VALUE		64
 #define	MAX_INFO_STRING		512
 
-char *Info_ValueForKey (char *s, char *key);
-void Info_RemoveKey (char *s, char *key);
-void Info_SetValueForKey (char *s, char *key, char *value);
-qboolean Info_Validate (char *s);
+qboolean Info_KeyExists (const char *s, const char *key);
+char *Info_ValueForKey (const char *s, const char *key);
+void Info_RemoveKey (char *s, const char *key);
+void Info_SetValueForKey (char *s, const char *key, const char *value);
+qboolean Info_Validate (const char *s);
+qboolean Info_CheckBytes (const char *s);
+
+void seedMT (uint32 seed);
+uint32 randomMT (void);
 
 /*
 ==============================================================
@@ -264,13 +519,14 @@ SYSTEM SPECIFIC
 ==============================================================
 */
 
-extern	int	curtime;		// time returned by last Sys_Milliseconds
+extern	unsigned int	curtime;		// time returned by last Sys_Milliseconds
 
-int		Sys_Milliseconds (void);
+unsigned int		Sys_Milliseconds (void);
 void	Sys_Mkdir (char *path);
+void	Sys_DebugBreak (void);
 
 // large block stack allocation routines
-void	*Hunk_Begin (int maxsize);
+void	*Hunk_Begin (int maxsize, int precommit);
 void	*Hunk_Alloc (int size);
 void	Hunk_Free (void *buf);
 int		Hunk_End (void);
@@ -285,14 +541,35 @@ int		Hunk_End (void);
 /*
 ** pass in an attribute mask of things you wish to REJECT
 */
-char	*Sys_FindFirst (char *path, unsigned musthave, unsigned canthave );
-char	*Sys_FindNext ( unsigned musthave, unsigned canthave );
+char	*Sys_FindFirst (char *path, uint32 musthave, uint32 canthave );
+char	*Sys_FindNext ( uint32 musthave, uint32 canthave );
 void	Sys_FindClose (void);
 
 
+void Sys_Sleep (int msec);
+
+#define	LOG_GENERAL		0x0
+#define LOG_CLIENT		0x1
+#define	LOG_SERVER		0x2
+#define LOG_DEBUG		0x4
+#define	LOG_WARNING		0x8
+#define	LOG_ERROR		0x10
+#define	LOG_GAME		0x20
+#define	LOG_CONNECT		0x40
+#define	LOG_NAME		0x80
+#define	LOG_DROP		0x100
+#define	LOG_KICK		0x200
+#define	LOG_EXPLOIT		0x400
+#define	LOG_DOWNLOAD	0x800
+#define	LOG_NOTICE		0x1000
+#define	LOG_CHAT		0x2000
+#define	LOG_NET			0x4000
+#define	LOG_GAMEDEBUG	0x8000
+#define LOG_ANTICHEAT	0x10000
+
 // this is only here so the functions in q_shared.c and q_shwin.c can link
-void Sys_Error (char *error, ...);
-void Com_Printf (char *msg, ...);
+NORETURN void Sys_Error (const char *error, ...) __attribute__ ((format (printf, 1, 2)));
+void Com_Printf (const char *fmt, int level, ...) __attribute__ ((format (printf, 1, 3)));
 
 
 /*
@@ -316,14 +593,37 @@ CVARS (console variables)
 // nothing outside the Cvar_*() functions should modify these fields!
 typedef struct cvar_s
 {
-	char		*name;
-	char		*string;
-	char		*latched_string;	// for CVAR_LATCH vars
-	int			flags;
-	qboolean	modified;	// set each time the cvar is changed
-	float		value;
-	struct cvar_s *next;
+	char		*name;													//0x00
+	char		*string;												//0x04
+	char		*latched_string;	// for CVAR_LATCH vars				//0x08
+	int			flags;													//0x0c
+	qboolean	modified;	// set each time the cvar is changed		//0x10
+	float		value;													//0x14
+	struct cvar_s *next;												//0x18
+
+	//r1ch: added this to avoid all the if (x->modified) bloat
+	void		(*changed) (struct cvar_s *self, char *oldValue, char *newValue);
+	int			intvalue;
+	const char	*help;
 } cvar_t;
+
+#define	MAX_ALIAS_NAME	32
+
+typedef struct cmdalias_s
+{
+	char				name[MAX_ALIAS_NAME];
+	struct cmdalias_s	*next;
+	char				*value;
+} cmdalias_t;
+
+typedef void (*xcommand_t) (void);
+
+typedef struct cmd_function_s
+{
+	const char				*name;
+	struct cmd_function_s	*next;
+	xcommand_t				function;
+} cmd_function_t;
 
 #endif		// CVAR
 
@@ -368,6 +668,7 @@ COLLISION DETECTION
 #define	CONTENTS_TRANSLUCENT	0x10000000	// auto set if any surface has trans
 #define	CONTENTS_LADDER			0x20000000
 
+#define	CONTENTS_ENT_NOCLIP		0x40000000	// r1q2 hack for non-velocity-changing clipping to solids
 
 
 #define	SURF_LIGHT		0x1		// value will hold the light strength
@@ -411,6 +712,15 @@ typedef struct cplane_s
 	byte	signbits;		// signx + (signy<<1) + (signz<<1)
 	byte	pad[2];
 } cplane_t;
+
+//r1: "fast" plane for server calcs
+typedef struct fplane_s
+{
+	int		type;			// for fast side tests
+	float	dist;
+	vec3_t	normal;
+	int		signbits;		// signx + (signy<<1) + (signz<<1)
+} fplane_t;
 
 // structure offset for asm code
 #define CPLANE_NORMAL_X			0
@@ -477,7 +787,7 @@ typedef enum
 #define	PMF_TIME_WATERJUMP	8	// pm_time is waterjump
 #define	PMF_TIME_LAND		16	// pm_time is time before rejump
 #define	PMF_TIME_TELEPORT	32	// pm_time is non-moving time
-#define PMF_NO_PREDICTION	64	// temporarily disables prediction (used for grappling point)
+#define PMF_NO_PREDICTION	64	// temporarily disables prediction (used for grappling hook)
 
 // this structure needs to be communicated bit-accurate
 // from the server to the client to guarantee that
@@ -488,12 +798,12 @@ typedef struct
 {
 	pmtype_t	pm_type;
 
-	short		origin[3];		// 12.3
-	short		velocity[3];	// 12.3
+	int16		origin[3];		// 12.3
+	int16		velocity[3];	// 12.3
 	byte		pm_flags;		// ducked, jump_held, etc
 	byte		pm_time;		// each unit = 8 ms
-	short		gravity;
-	short		delta_angles[3];	// add to command angles to get view direction
+	int16		gravity;
+	int16		delta_angles[3];	// add to command angles to get view direction
 									// changed by spawns, rotating objects, and teleporters
 } pmove_state_t;
 
@@ -503,6 +813,15 @@ typedef struct
 //
 #define	BUTTON_ATTACK		1
 #define	BUTTON_USE			2
+
+//stolen for r1q2 in the name of bandwidth
+#define	BUTTON_UCMD_DBLFORWARD	4
+#define BUTTON_UCMD_DBLSIDE		8
+#define	BUTTON_UCMD_DBLUP		16
+
+#define BUTTON_UCMD_DBL_ANGLE1	32
+#define BUTTON_UCMD_DBL_ANGLE2	64
+
 #define	BUTTON_ANY			128			// any key whatsoever
 
 
@@ -511,8 +830,8 @@ typedef struct usercmd_s
 {
 	byte	msec;
 	byte	buttons;
-	short	angles[3];
-	short	forwardmove, sidemove, upmove;
+	int16	angles[3];
+	int16	forwardmove, sidemove, upmove;
 	byte	impulse;		// remove?
 	byte	lightlevel;		// light level the player is standing on
 } usercmd_t;
@@ -542,10 +861,40 @@ typedef struct
 	int			waterlevel;
 
 	// callbacks to test the world
-	trace_t		(*trace) (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end);
-	int			(*pointcontents) (vec3_t point);
+	trace_t		(IMPORT *trace) (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end);
+	int			(IMPORT *pointcontents) (vec3_t point);
 } pmove_t;
 
+typedef struct
+{
+	// state (in / out)
+	pmove_state_t	s;
+
+	// command (in)
+	usercmd_t		cmd;
+	qboolean		snapinitial;	// if s has been changed outside pmove
+
+	// results (out)
+	int			numtouch;
+	struct edict_s	*touchents[MAXTOUCH];
+
+	vec3_t		viewangles;			// clamped
+	float		viewheight;
+
+	vec3_t		mins, maxs;			// bounding box size
+
+	struct edict_s	*groundentity;
+	int			watertype;
+	int			waterlevel;
+
+	// callbacks to test the world
+	trace_t		(IMPORT *trace) (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end);
+	int			(IMPORT *pointcontents) (vec3_t point);
+
+	float		multiplier;
+	qboolean	strafehack;
+	qboolean	enhanced;
+} pmove_new_t;
 
 // entity_state_t->effects
 // Effects are things handled on the client side (lights, particles, frame animations)
@@ -890,7 +1239,7 @@ typedef struct
 
 // ROGUE
 
-extern	vec3_t monster_flash_offset [];
+extern	const vec3_t monster_flash_offset [];
 
 
 // temp entity events
@@ -978,10 +1327,12 @@ typedef enum
 #define	CHAN_VOICE              2
 #define	CHAN_ITEM               3
 #define	CHAN_BODY               4
+
 // modifier flags
 #define	CHAN_NO_PHS_ADD			8	// send to all clients, not just ones in PHS (ATTN 0 will also do this)
 #define	CHAN_RELIABLE			16	// send by reliable message, not datagram
-
+//R1Q2 SPECIFIC XXX
+#define	CHAN_SERVER_ATTN_CALC	32
 
 // sound attenuation values
 #define	ATTN_NONE               0	// full volume the entire level
@@ -1085,8 +1436,8 @@ ROGUE - VERSIONS
 ==========================================================
 */
 
-#define	ANGLE2SHORT(x)	((int)((x)*65536/360) & 65535)
-#define	SHORT2ANGLE(x)	((x)*(360.0/65536))
+#define	ANGLE2SHORT(x)	((int)((x)*182.04444444444444444444444444444f) & 65535)
+#define	SHORT2ANGLE(x)	((x)*(0.0054931640625f))
 
 
 //
@@ -1106,14 +1457,14 @@ ROGUE - VERSIONS
 #define	CS_MAPCHECKSUM		31		// for catching cheater maps
 
 #define	CS_MODELS			32
-#define	CS_SOUNDS			(CS_MODELS+MAX_MODELS)
-#define	CS_IMAGES			(CS_SOUNDS+MAX_SOUNDS)
-#define	CS_LIGHTS			(CS_IMAGES+MAX_IMAGES)
-#define	CS_ITEMS			(CS_LIGHTS+MAX_LIGHTSTYLES)
-#define	CS_PLAYERSKINS		(CS_ITEMS+MAX_ITEMS)
-#define CS_GENERAL			(CS_PLAYERSKINS+MAX_CLIENTS)
+#define	CS_SOUNDS			(CS_MODELS+MAX_MODELS)			//288
+#define	CS_IMAGES			(CS_SOUNDS+MAX_SOUNDS)			//544
+#define	CS_LIGHTS			(CS_IMAGES+MAX_IMAGES)			//800
+#define	CS_ITEMS			(CS_LIGHTS+MAX_LIGHTSTYLES)		//1056
+#define	CS_PLAYERSKINS		(CS_ITEMS+MAX_ITEMS)			//1312
+#define CS_GENERAL			(CS_PLAYERSKINS+MAX_CLIENTS)	//1568
 #define CS_SOULCOUNTER		(CS_GENERAL+1)
-#define	MAX_CONFIGSTRINGS	(CS_GENERAL+MAX_GENERAL)
+#define	MAX_CONFIGSTRINGS	(CS_GENERAL+MAX_GENERAL)		//2080
 
 
 //==============================================
@@ -1125,7 +1476,7 @@ ROGUE - VERSIONS
 // All muzzle flashes really should be converted to events...
 typedef enum
 {
-	EV_NONE,
+	EVENT_NONE,
 	EV_ITEM_RESPAWN,
 	EV_FOOTSTEP,
 	EV_FALLSHORT,
@@ -1146,17 +1497,17 @@ typedef struct entity_state_s
 	vec3_t	origin;
 	vec3_t	angles;
 	vec3_t	old_origin;		// for lerping
-	int		modelindex;
-	int		modelindex2, modelindex3, modelindex4;	// weapons, CTF flags, etc
-	int		frame;
-	int		skinnum;
-	unsigned int		effects;		// PGM - we're filling it, so it needs to be unsigned
-	int		renderfx;
-	int		solid;			// for client side prediction, 8*(bits 0-4) is x/y radius
+	int32		modelindex;
+	int32		modelindex2, modelindex3, modelindex4;	// weapons, CTF flags, etc
+	int32		frame;
+	int32		skinnum;
+	uint32	effects;		// PGM - we're filling it, so it needs to be unsigned
+	int32		renderfx;
+	int32		solid;		// for client side prediction, 8*(bits 0-4) is x/y radius
 							// 8*(bits 5-9) is z down distance, 8(bits10-15) is z up
 							// gi.linkentity sets this properly
-	int		sound;			// for looping sounds, to guarantee shutoff
-	int		event;			// impulse events -- muzzle flashes, footsteps, etc
+	int32		sound;		// for looping sounds, to guarantee shutoff
+	int32		event;		// impulse events -- muzzle flashes, footsteps, etc
 							// events only go out for a single frame, they
 							// are automatically cleared each frame
 } entity_state_t;
@@ -1168,6 +1519,7 @@ typedef struct entity_state_s
 // to rendered a view.  There will only be 10 player_state_t sent each second,
 // but the number of pmove_state_t changes will be reletive to client
 // frame rates
+
 typedef struct
 {
 	pmove_state_t	pmove;		// for prediction
@@ -1181,6 +1533,7 @@ typedef struct
 
 	vec3_t		gunangles;
 	vec3_t		gunoffset;
+
 	int			gunindex;
 	int			gunframe;
 
@@ -1190,9 +1543,8 @@ typedef struct
 
 	int			rdflags;		// refdef flags
 
-	short		stats[MAX_STATS];		// fast status bar updates
+	int16		stats[MAX_STATS];		// fast status bar updates
 } player_state_t;
-
 
 // ==================
 // PGM 
@@ -1203,3 +1555,7 @@ typedef struct
 extern int vidref_val;
 // PGM
 // ==================
+
+#define _QSHARED_H
+
+#endif

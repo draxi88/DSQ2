@@ -650,19 +650,19 @@ qboolean M_CheckAttack (edict_t *self)
 
 	if (self->monsterinfo.aiflags & AI_STAND_GROUND)
 	{
-		chance = 0.4;
+		chance = 0.4f;
 	}
 	else if (enemy_range == RANGE_MELEE)
 	{
-		chance = 0.2;
+		chance = 0.2f;
 	}
 	else if (enemy_range == RANGE_NEAR)
 	{
-		chance = 0.1;
+		chance = 0.1f;
 	}
 	else if (enemy_range == RANGE_MID)
 	{
-		chance = 0.02;
+		chance = 0.02f;
 	}
 	else
 	{
@@ -670,7 +670,7 @@ qboolean M_CheckAttack (edict_t *self)
 	}
 
 	if (skill->value == 0)
-		chance *= 0.5;
+		chance *= 0.5f;
 	else if (skill->value >= 2)
 		chance *= 2;
 
@@ -784,10 +784,12 @@ qboolean ai_checkattack (edict_t *self, float dist)
 			if ((level.time - self->enemy->teleport_time) > 5.0)
 			{
 				if (self->goalentity == self->enemy)
+				{
 					if (self->movetarget)
 						self->goalentity = self->movetarget;
 					else
 						self->goalentity = NULL;
+				}
 				self->monsterinfo.aiflags &= ~AI_SOUND_TARGET;
 				if (self->monsterinfo.aiflags & AI_TEMP_STAND_GROUND)
 					self->monsterinfo.aiflags &= ~(AI_STAND_GROUND | AI_TEMP_STAND_GROUND);
@@ -1074,7 +1076,7 @@ void ai_run (edict_t *self, float dist)
 			{
 				if (left < 1)
 				{
-					VectorSet(v, d2 * left * 0.5, -16, 0);
+					VectorSet(v, d2 * left * 0.5f, -16, 0);
 					G_ProjectSource (self->s.origin, v, v_forward, v_right, left_target);
 //					gi.dprintf("incomplete path, go part way and adjust again\n");
 				}
@@ -1091,7 +1093,7 @@ void ai_run (edict_t *self, float dist)
 			{
 				if (right < 1)
 				{
-					VectorSet(v, d2 * right * 0.5, 16, 0);
+					VectorSet(v, d2 * right * 0.5f, 16, 0);
 					G_ProjectSource (self->s.origin, v, v_forward, v_right, right_target);
 //					gi.dprintf("incomplete path, go part way and adjust again\n");
 				}
