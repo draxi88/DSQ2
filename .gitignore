@@ -363,4 +363,4 @@ ASALocalRun/
 .mfractor/
 
 *.db
-.vs/
+.vs\
