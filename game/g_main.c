@@ -40,7 +40,6 @@ cvar_t	*fraglimit;
 cvar_t	*timelimit;
 cvar_t	*password;
 cvar_t	*spectator_password;
-cvar_t	*needpass;
 cvar_t	*maxclients;
 cvar_t	*maxspectators;
 cvar_t	*maxentities;
@@ -72,7 +71,7 @@ cvar_t	*flood_waitdelay;
 
 cvar_t	*sv_maplist;
 
-void SpawnEntities (char *mapname, char *entities, char *spawnpoint);
+void SpawnEntities (const char *mapname, const char *entities, const char *spawnpoint);
 void ClientThink (edict_t *ent, usercmd_t *cmd);
 qboolean ClientConnect (edict_t *ent, char *userinfo);
 void ClientUserinfoChanged (edict_t *ent, char *userinfo);
@@ -80,10 +79,10 @@ void ClientDisconnect (edict_t *ent);
 void ClientBegin (edict_t *ent);
 void ClientCommand (edict_t *ent);
 void RunEntity (edict_t *ent);
-void WriteGame (char *filename, qboolean autosave);
-void ReadGame (char *filename);
-void WriteLevel (char *filename);
-void ReadLevel (char *filename);
+void WriteGame (const char *filename, qboolean autosave);
+void ReadGame (const char *filename);
+void WriteLevel (const char *filename);
+void ReadLevel (const char *filename);
 void InitGame (void);
 void G_RunFrame (void);
 
@@ -108,7 +107,7 @@ Returns a pointer to the structure with all entry points
 and global variables
 =================
 */
-game_export_t *GetGameAPI (game_import_t *import)
+game_export_t __attribute__ ((visibility("default"), externally_visible)) *GetGameAPI (game_import_t *import)
 {
 	gi = *import;
 
@@ -140,25 +139,25 @@ game_export_t *GetGameAPI (game_import_t *import)
 
 #ifndef GAME_HARD_LINKED
 // this is only here so the functions in q_shared.c and q_shwin.c can link
-void Sys_Error (char *error, ...)
+void Sys_Error (const char *error, ...)
 {
 	va_list		argptr;
 	char		text[1024];
 
 	va_start (argptr, error);
-	vsprintf (text, error, argptr);
+	vsnprintf (text, sizeof(text)-1, error, argptr);
 	va_end (argptr);
 
-	gi.error (ERR_FATAL, "%s", text);
+	gi.error ("%s", text);
 }
 
-void Com_Printf (char *msg, ...)
+void Com_Printf (const char *msg, int level, ...)
 {
 	va_list		argptr;
 	char		text[1024];
 
-	va_start (argptr, msg);
-	vsprintf (text, msg, argptr);
+	va_start (argptr, level);
+	vsnprintf (text, sizeof(text)-1, msg, argptr);
 	va_end (argptr);
 
 	gi.dprintf ("%s", text);
@@ -266,33 +265,6 @@ void EndDMLevel (void)
 			return;
 		}
 		BeginIntermission (ent);
-	}
-}
-
-
-/*
-=================
-CheckNeedPass
-=================
-*/
-void CheckNeedPass (void)
-{
-	int need;
-
-	// if password or spectator_password has changed, update needpass
-	// as needed
-	if (password->modified || spectator_password->modified) 
-	{
-		password->modified = spectator_password->modified = false;
-
-		need = 0;
-
-		if (*password->string && Q_stricmp(password->string, "none"))
-			need |= 1;
-		if (*spectator_password->string && Q_stricmp(spectator_password->string, "none"))
-			need |= 2;
-
-		gi.cvar_set("needpass", va("%d", need));
 	}
 }
 
@@ -432,9 +404,6 @@ void G_RunFrame (void)
 
 	// see if it is time to end a deathmatch
 	CheckDMRules ();
-
-	// see if needpass needs updated
-	CheckNeedPass ();
 
 	// build the playerstate_t structures for all players
 	ClientEndServerFrames ();

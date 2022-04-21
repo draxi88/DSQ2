@@ -20,6 +20,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "g_local.h"
 
+
+// ADJ fptrs -->
+#ifdef _WIN32
+#include "windows.h"
+#endif
+
+cvar_t	*error_on_ptrs_moved; 
+// <-- ADJ fptrs
+
 #define Function(f) {#f, f}
 
 mmove_t mmove_reloc;
@@ -175,7 +184,7 @@ void InitGame (void)
 	maxspectators = gi.cvar ("maxspectators", "4", CVAR_SERVERINFO);
 	deathmatch = gi.cvar ("deathmatch", "0", CVAR_LATCH);
 	coop = gi.cvar ("coop", "0", CVAR_LATCH);
-	skill = gi.cvar ("skill", "3", CVAR_LATCH);
+	skill = gi.cvar ("skill", "1", CVAR_LATCH);
 	maxentities = gi.cvar ("maxentities", "1024", CVAR_LATCH);
 
 	// change anytime vars
@@ -184,7 +193,6 @@ void InitGame (void)
 	timelimit = gi.cvar ("timelimit", "0", CVAR_SERVERINFO);
 	password = gi.cvar ("password", "", CVAR_USERINFO);
 	spectator_password = gi.cvar ("spectator_password", "", CVAR_USERINFO);
-	needpass = gi.cvar ("needpass", "0", CVAR_SERVERINFO);
 	filterban = gi.cvar ("filterban", "1", 0);
 
 	g_select_empty = gi.cvar ("g_select_empty", "0", CVAR_ARCHIVE);
@@ -203,6 +211,8 @@ void InitGame (void)
 	// dm map list
 	sv_maplist = gi.cvar ("sv_maplist", "", 0);
 
+	error_on_ptrs_moved = gi.cvar("error_on_ptrs_moved", "1", 0);  // ADJ <--> fptrs
+
 	// items
 	InitItems ();
 
@@ -211,13 +221,13 @@ void InitGame (void)
 	Com_sprintf (game.helpmessage2, sizeof(game.helpmessage2), "");
 
 	// initialize all entities for this game
-	game.maxentities = maxentities->value;
+	game.maxentities = (int)maxentities->value;
 	g_edicts =  gi.TagMalloc (game.maxentities * sizeof(g_edicts[0]), TAG_GAME);
 	globals.edicts = g_edicts;
 	globals.max_edicts = game.maxentities;
 
 	// initialize all clients for this game
-	game.maxclients = maxclients->value;
+	game.maxclients = (int)maxclients->value;
 	game.clients = gi.TagMalloc (game.maxclients * sizeof(game.clients[0]), TAG_GAME);
 	globals.num_edicts = game.maxclients+1;
 }
@@ -501,7 +511,7 @@ void ReadGame (char *filename)
 	if (strcmp (str, __DATE__))
 	{
 		fclose (f);
-		gi.error ("Savegame from an older version.\n");
+		gi.error ("Savegame from a different version (%s / %s).\n", str, __DATE__); // <--> ADJ fptrs
 	}
 
 	g_edicts =  gi.TagMalloc (game.maxentities * sizeof(g_edicts[0]), TAG_GAME);
@@ -622,6 +632,36 @@ void ReadLevelLocals (FILE *f)
 
 /*
 =================
+GetFunctionInStdBlock - ADJ fptrs
+
+This uses win32 API's to work out where in memory the DLL has been loaded
+- so even if some other DLL has been loaded into 0x20000000 we can return 
+the address in that range so that we can tell if function pointers really
+are moving.
+=================
+*/
+
+void *GetFunctionInStdBlock(void *p)
+{
+#ifdef _WIN32
+	byte *baseAddress = (byte *)0x20000000;
+	int offset;
+    MEMORY_BASIC_INFORMATION mbi;
+	BOOL mbiValid = VirtualQuery(InitGame, &mbi, sizeof(mbi));
+
+	if (mbiValid)
+		baseAddress = mbi.AllocationBase;
+
+	offset = ((byte*)p - baseAddress);
+
+	return (void*)(offset + 0x20000000);
+#else
+	return ((void *)InitGame);
+#endif
+}
+
+/*
+=================
 WriteLevel
 
 =================
@@ -642,7 +682,7 @@ void WriteLevel (char *filename)
 	fwrite (&i, sizeof(i), 1, f);
 
 	// write out a function pointer for checking
-	base = (void *)InitGame;
+	base = GetFunctionInStdBlock((void *)InitGame);  // <--> ADJ fptrs
 	fwrite (&base, sizeof(base), 1, f);
 
 	// write out level_locals_t
@@ -662,6 +702,7 @@ void WriteLevel (char *filename)
 
 	fclose (f);
 }
+
 
 
 /*
@@ -687,6 +728,7 @@ void ReadLevel (char *filename)
 	int		i;
 	void	*base;
 	edict_t	*ent;
+	void	*initGamePtr = GetFunctionInStdBlock((void*)InitGame); // <--> ADJ fptrs
 
 	f = fopen (filename, "rb");
 	if (!f)
@@ -698,7 +740,7 @@ void ReadLevel (char *filename)
 
 	// wipe all the entities
 	memset (g_edicts, 0, game.maxentities*sizeof(g_edicts[0]));
-	globals.num_edicts = maxclients->value+1;
+	globals.num_edicts = (int)(maxclients->value+1);
 
 	// check edict size
 	fread (&i, sizeof(i), 1, f);
@@ -711,11 +753,29 @@ void ReadLevel (char *filename)
 	// check function pointer base address
 	fread (&base, sizeof(base), 1, f);
 #ifdef _WIN32
-	if (base != (void *)InitGame)
+	if (base != initGamePtr) // ADJ fptrs -->
 	{
-		fclose (f);
-		gi.error ("ReadLevel: function pointers have moved");
+		if (error_on_ptrs_moved->value)
+		{
+			fclose (f);
+			gi.error("ReadLevel: function pointers have moved\n"\
+				"You can attempt to continue by setting the cvar error_on_ptrs_moved to zero.\n"\
+				"However, this may cause crashes.\n"\
+				"InitGame addresses = %x / %x\n\n", base, initGamePtr);
+		}
+		else
+		{
+			gi.dprintf("Severe Warning: function pointers have moved\n"\
+				"You may experience crashes relating to this. You can prevent this"\
+				"by enabling the cvar error_on_ptrs_moved.\n"
+				"InitGame addresses = %x / %x\n\n", base, initGamePtr);
+		}
 	}
+	else if (base != (void *)InitGame)
+	{
+		gi.dprintf("Warning: DLL relocated - InitGame address = %x\n", ((byte *)InitGame));
+	}
+	// <-- ADJ fptrs
 #else
 	gi.dprintf("Function offsets %d\n", ((byte *)base) - ((byte *)InitGame));
 #endif

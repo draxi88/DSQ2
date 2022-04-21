@@ -316,7 +316,7 @@ void ED_CallSpawn (edict_t *ent)
 ED_NewString
 =============
 */
-char *ED_NewString (char *string)
+char *ED_NewString (const char *string)
 {
 	char	*newb, *new_p;
 	int		i,l;
@@ -355,7 +355,7 @@ Takes a key/value pair and sets the binary values
 in an edict
 ===============
 */
-void ED_ParseField (char *key, char *value, edict_t *ent)
+void ED_ParseField (const char *key, const char *value, edict_t *ent)
 {
 	field_t	*f;
 	byte	*b;
@@ -386,15 +386,17 @@ void ED_ParseField (char *key, char *value, edict_t *ent)
 				*(int *)(b+f->ofs) = atoi(value);
 				break;
 			case F_FLOAT:
-				*(float *)(b+f->ofs) = atof(value);
+				*(float *)(b+f->ofs) = (float)atof(value);
 				break;
 			case F_ANGLEHACK:
-				v = atof(value);
+				v = (float)atof(value);
 				((float *)(b+f->ofs))[0] = 0;
 				((float *)(b+f->ofs))[1] = v;
 				((float *)(b+f->ofs))[2] = 0;
 				break;
 			case F_IGNORE:
+				break;
+			default:
 				break;
 			}
 			return;
@@ -411,11 +413,11 @@ Parses an edict out of the given string, returning the new position
 ed should be a properly initialized empty edict.
 ====================
 */
-char *ED_ParseEdict (char *data, edict_t *ent)
+static const char *ED_ParseEdict (const char *data, edict_t *ent)
 {
 	qboolean	init;
 	char		keyname[256];
-	char		*com_token;
+	const char	*com_token;
 
 	init = false;
 	memset (&st, 0, sizeof(st));
@@ -517,15 +519,15 @@ Creates a server's entity / program execution context by
 parsing textual entity definitions out of an ent file.
 ==============
 */
-void SpawnEntities (char *mapname, char *entities, char *spawnpoint)
+void SpawnEntities (const char *mapname, const char *entities, const char *spawnpoint)
 {
 	edict_t		*ent;
 	int			inhibit;
-	char		*com_token;
+	const char	*com_token;
 	int			i;
 	float		skill_level;
 
-	skill_level = 3;//DSQ2 // floor(skill->value);
+	skill_level = 3;// (float)floor(skill->value);
 	if (skill_level < 0)
 		skill_level = 0;
 	if (skill_level > 3)
@@ -619,6 +621,8 @@ void SpawnEntities (char *mapname, char *entities, char *spawnpoint)
 	G_FindTeams ();
 
 	PlayerTrail_Init ();
+
+	//DSQ2
 	GetEntities();
 	SpawnSouls();
 }
@@ -649,7 +653,7 @@ void SpawnEntities (char *mapname, char *entities, char *spawnpoint)
 
 #endif
 
-char *single_statusbar = 
+char *single_statusbar =
 "yb	-24 "
 
 // stamina
@@ -815,7 +819,6 @@ Only used for the world.
 */
 void SP_worldspawn (edict_t *ent)
 {
-
 	ent->movetype = MOVETYPE_PUSH;
 	ent->solid = SOLID_BSP;
 	ent->inuse = true;			// since the world doesn't use G_Spawn()
@@ -859,8 +862,8 @@ void SP_worldspawn (edict_t *ent)
 	// status bar program
 	if (deathmatch->value)
 		gi.configstring (CS_STATUSBAR, dm_statusbar);
-	else 
-		gi.configstring(CS_STATUSBAR, single_statusbar);
+	else
+		gi.configstring (CS_STATUSBAR, single_statusbar);
 
 	//---------------
 

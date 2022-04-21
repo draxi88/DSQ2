@@ -31,6 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 void monster_fire_bullet (edict_t *self, vec3_t start, vec3_t dir, int damage, int kick, int hspread, int vspread, int flashtype)
 {
 	fire_bullet (self, start, dir, damage, kick, hspread, vspread, MOD_UNKNOWN);
+	self->ammo_type = AMMO_BULLETS;
 
 	gi.WriteByte (svc_muzzleflash2);
 	gi.WriteShort (self - g_edicts);
@@ -41,6 +42,7 @@ void monster_fire_bullet (edict_t *self, vec3_t start, vec3_t dir, int damage, i
 void monster_fire_shotgun (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick, int hspread, int vspread, int count, int flashtype)
 {
 	fire_shotgun (self, start, aimdir, damage, kick, hspread, vspread, count, MOD_UNKNOWN);
+	self->ammo_type = AMMO_SHELLS;
 
 	gi.WriteByte (svc_muzzleflash2);
 	gi.WriteShort (self - g_edicts);
@@ -51,6 +53,9 @@ void monster_fire_shotgun (edict_t *self, vec3_t start, vec3_t aimdir, int damag
 void monster_fire_blaster (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, int flashtype, int effect)
 {
 	fire_blaster (self, start, dir, damage, speed, effect, false);
+	
+	if(strstr(self->classname, "soldier") != 0)
+		self->ammo_type = AMMO_CELLS;
 
 	gi.WriteByte (svc_muzzleflash2);
 	gi.WriteShort (self - g_edicts);
@@ -60,7 +65,8 @@ void monster_fire_blaster (edict_t *self, vec3_t start, vec3_t dir, int damage, 
 
 void monster_fire_grenade (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, int flashtype)
 {
-	fire_grenade (self, start, aimdir, damage, speed, 2.5, damage+40);
+	fire_grenade (self, start, aimdir, damage, speed, 2.5f, (float)(damage+40));
+	self->ammo_type = AMMO_GRENADES;
 
 	gi.WriteByte (svc_muzzleflash2);
 	gi.WriteShort (self - g_edicts);
@@ -70,7 +76,8 @@ void monster_fire_grenade (edict_t *self, vec3_t start, vec3_t aimdir, int damag
 
 void monster_fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, int flashtype)
 {
-	fire_rocket (self, start, dir, damage, speed, damage+20, damage);
+	fire_rocket (self, start, dir, damage, speed, (float)(damage+20), damage);
+	self->ammo_type = AMMO_ROCKETS;
 
 	gi.WriteByte (svc_muzzleflash2);
 	gi.WriteShort (self - g_edicts);
@@ -81,6 +88,7 @@ void monster_fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, i
 void monster_fire_railgun (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick, int flashtype)
 {
 	fire_rail (self, start, aimdir, damage, kick);
+	self->ammo_type = AMMO_SLUGS;
 
 	gi.WriteByte (svc_muzzleflash2);
 	gi.WriteShort (self - g_edicts);
@@ -91,6 +99,7 @@ void monster_fire_railgun (edict_t *self, vec3_t start, vec3_t aimdir, int damag
 void monster_fire_bfg (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, int kick, float damage_radius, int flashtype)
 {
 	fire_bfg (self, start, aimdir, damage, speed, damage_radius);
+	self->ammo_type = AMMO_CELLS;
 
 	gi.WriteByte (svc_muzzleflash2);
 	gi.WriteShort (self - g_edicts);
@@ -155,7 +164,7 @@ void M_CheckGround (edict_t *ent)
 // if the hull point one-quarter unit down is solid the entity is on ground
 	point[0] = ent->s.origin[0];
 	point[1] = ent->s.origin[1];
-	point[2] = ent->s.origin[2] - 0.25;
+	point[2] = ent->s.origin[2] - 0.25f;
 
 	trace = gi.trace (ent->s.origin, ent->mins, ent->maxs, point, ent, MASK_MONSTERSOLID);
 
@@ -231,7 +240,7 @@ void M_WorldEffects (edict_t *ent)
 			{	// drown!
 				if (ent->pain_debounce_time < level.time)
 				{
-					dmg = 2 + 2 * floor(level.time - ent->air_finished);
+					dmg = (int)(2 + 2 * (float)floor(level.time - ent->air_finished));
 					if (dmg > 15)
 						dmg = 15;
 					T_Damage (ent, world, world, vec3_origin, ent->s.origin, vec3_origin, dmg, 0, DAMAGE_NO_ARMOR, MOD_WATER);
@@ -249,7 +258,7 @@ void M_WorldEffects (edict_t *ent)
 			{	// suffocate!
 				if (ent->pain_debounce_time < level.time)
 				{
-					dmg = 2 + 2 * floor(level.time - ent->air_finished);
+					dmg = (int)(2 + 2 * (float)floor(level.time - ent->air_finished));
 					if (dmg > 15)
 						dmg = 15;
 					T_Damage (ent, world, world, vec3_origin, ent->s.origin, vec3_origin, dmg, 0, DAMAGE_NO_ARMOR, MOD_WATER);
@@ -273,7 +282,7 @@ void M_WorldEffects (edict_t *ent)
 	{
 		if (ent->damage_debounce_time < level.time)
 		{
-			ent->damage_debounce_time = level.time + 0.2;
+			ent->damage_debounce_time = level.time + 0.2f;
 			T_Damage (ent, world, world, vec3_origin, ent->s.origin, vec3_origin, 10*ent->waterlevel, 0, 0, MOD_LAVA);
 		}
 	}
@@ -406,10 +415,12 @@ void M_MoveFrame (edict_t *self)
 
 	index = self->s.frame - move->firstframe;
 	if (move->frame[index].aifunc)
+	{
 		if (!(self->monsterinfo.aiflags & AI_HOLD_FRAME))
 			move->frame[index].aifunc (self, move->frame[index].dist * self->monsterinfo.scale);
 		else
 			move->frame[index].aifunc (self, 0);
+	}
 
 	if (move->frame[index].thinkfunc)
 		move->frame[index].thinkfunc (self);
@@ -513,7 +524,6 @@ void monster_death_use (edict_t *self)
 	self->flags &= ~(FL_FLY|FL_SWIM);
 	self->monsterinfo.aiflags &= AI_GOOD_GUY;
 
-	
 	//DSQ2
 	gitem_t *soul;
 	soul = FindItemByClassname("strogg_soul");
@@ -523,34 +533,34 @@ void monster_death_use (edict_t *self)
 
 	if (self->item)
 	{
-		Drop_Item (self, self->item);
+		Drop_Item(self, self->item);
 		self->item = NULL;
 	}
 	else {
-		if (self->ammo_type && random() > 0.5) {
+		if (self->ammo_type && random() > 0.55) {
 			gitem_t *ammo;
 			switch (self->ammo_type) {
-			case BULLETS:
+			case AMMO_BULLETS:
 				ammo = FindItemByClassname("ammo_bullets");
 				break;
-			case SHELLS:
+			case AMMO_SHELLS:
 				ammo = FindItemByClassname("ammo_shells");
 				break;
-			case GRENADES:
+			case AMMO_GRENADES:
 				ammo = FindItemByClassname("ammo_grenades");
 				break;
-			case ROCKETS:
+			case AMMO_ROCKETS:
 				ammo = FindItemByClassname("ammo_rockets");
 				break;
-			case SLUGS:
+			case AMMO_SLUGS:
 				ammo = FindItemByClassname("ammo_rockets");
 				break;
-			case CELLS:
+			case AMMO_CELLS:
 				ammo = FindItemByClassname("ammo_cells");
 				break;
 			}
 			ammo->dropcount = random() * 6;
-			if(ammo->dropcount>0)
+			if (ammo->dropcount > 0)
 				Drop_Item(self, ammo);
 		}
 	}
@@ -677,8 +687,6 @@ void monster_start_go (edict_t *self)
 #ifdef DEBUG
 			gi.dprintf ("%s can't find target %s at %s\n", self->classname, self->target, vtos(self->s.origin));
 #endif
-			if(self->spawnflags == 2)
-				self->spawnflags = 0;
 			self->target = NULL;
 			self->monsterinfo.pausetime = 100000000;
 			self->monsterinfo.stand (self);

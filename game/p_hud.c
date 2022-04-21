@@ -34,9 +34,9 @@ void MoveClientToIntermission (edict_t *ent)
 	if (deathmatch->value || coop->value)
 		ent->client->showscores = true;
 	VectorCopy (level.intermission_origin, ent->s.origin);
-	ent->client->ps.pmove.origin[0] = level.intermission_origin[0]*8;
-	ent->client->ps.pmove.origin[1] = level.intermission_origin[1]*8;
-	ent->client->ps.pmove.origin[2] = level.intermission_origin[2]*8;
+	ent->client->ps.pmove.origin[0] = (int16)(level.intermission_origin[0]*8);
+	ent->client->ps.pmove.origin[1] = (int16)(level.intermission_origin[1]*8);
+	ent->client->ps.pmove.origin[2] = (int16)(level.intermission_origin[2]*8);
 	VectorCopy (level.intermission_angle, ent->client->ps.viewangles);
 	ent->client->ps.pmove.pm_type = PM_FREEZE;
 	ent->client->ps.gunindex = 0;
@@ -379,17 +379,17 @@ void G_SetStats (edict_t *ent)
 	gitem_t		*item;
 	int			index, cells = 0;
 	int			power_armor_type;
-
+	
 	//
 	// health
 	//
-	ent->client->ps.stats[STAT_HEALTH_ICON] = level.pic_health;
-	ent->client->ps.stats[STAT_HEALTH] = ent->health;
+	ent->client->ps.stats[STAT_HEALTH_ICON] = (int16)level.pic_health;
+	ent->client->ps.stats[STAT_HEALTH] = (int16)ent->health;
 	ent->client->ps.stats[STAT_HEALTH_FLASK] = ent->client->resp.health_flask;
 
 	//souls
 	ent->client->ps.stats[STAT_SOULS] = CS_SOULCOUNTER;
-	
+
 
 	//stamina
 	ent->client->ps.stats[STAT_STAMINA] = ent->client->pers.stamina;
@@ -405,8 +405,8 @@ void G_SetStats (edict_t *ent)
 	else
 	{
 		item = &itemlist[ent->client->ammo_index];
-		ent->client->ps.stats[STAT_AMMO_ICON] = gi.imageindex (item->icon);
-		ent->client->ps.stats[STAT_AMMO] = ent->client->pers.inventory[ent->client->ammo_index];
+		ent->client->ps.stats[STAT_AMMO_ICON] = (int16)gi.imageindex(item->icon);
+		ent->client->ps.stats[STAT_AMMO] = (int16)ent->client->pers.inventory[ent->client->ammo_index];
 	}
 	
 	//
@@ -427,14 +427,14 @@ void G_SetStats (edict_t *ent)
 	index = ArmorIndex (ent);
 	if (power_armor_type && (!index || (level.framenum & 8) ) )
 	{	// flash between power armor and other armor icon
-		ent->client->ps.stats[STAT_ARMOR_ICON] = gi.imageindex ("i_powershield");
-		ent->client->ps.stats[STAT_ARMOR] = cells;
+		ent->client->ps.stats[STAT_ARMOR_ICON] = (int16)gi.imageindex("i_powershield");
+		ent->client->ps.stats[STAT_ARMOR] = (int16)cells;
 	}
 	else if (index)
 	{
 		item = GetItemByIndex (index);
-		ent->client->ps.stats[STAT_ARMOR_ICON] = gi.imageindex (item->icon);
-		ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.inventory[index];
+		ent->client->ps.stats[STAT_ARMOR_ICON] = (int16)gi.imageindex(item->icon);
+		ent->client->ps.stats[STAT_ARMOR] = (int16)ent->client->pers.inventory[index];
 	}
 	else
 	{
@@ -456,23 +456,23 @@ void G_SetStats (edict_t *ent)
 	//
 	if (ent->client->quad_framenum > level.framenum)
 	{
-		ent->client->ps.stats[STAT_TIMER_ICON] = gi.imageindex ("p_quad");
-		ent->client->ps.stats[STAT_TIMER] = (ent->client->quad_framenum - level.framenum)/10;
+		ent->client->ps.stats[STAT_TIMER_ICON] = (int16)gi.imageindex("p_quad");
+		ent->client->ps.stats[STAT_TIMER] = (int16)((ent->client->quad_framenum - level.framenum)/10);
 	}
 	else if (ent->client->invincible_framenum > level.framenum)
 	{
-		ent->client->ps.stats[STAT_TIMER_ICON] = gi.imageindex ("p_invulnerability");
-		ent->client->ps.stats[STAT_TIMER] = (ent->client->invincible_framenum - level.framenum)/10;
+		ent->client->ps.stats[STAT_TIMER_ICON] = (int16)gi.imageindex("p_invulnerability");
+		ent->client->ps.stats[STAT_TIMER] = (int16)((ent->client->invincible_framenum - level.framenum)/10);
 	}
 	else if (ent->client->enviro_framenum > level.framenum)
 	{
-		ent->client->ps.stats[STAT_TIMER_ICON] = gi.imageindex ("p_envirosuit");
-		ent->client->ps.stats[STAT_TIMER] = (ent->client->enviro_framenum - level.framenum)/10;
+		ent->client->ps.stats[STAT_TIMER_ICON] = (int16)gi.imageindex("p_envirosuit");
+		ent->client->ps.stats[STAT_TIMER] = (int16)((ent->client->enviro_framenum - level.framenum)/10);
 	}
 	else if (ent->client->breather_framenum > level.framenum)
 	{
-		ent->client->ps.stats[STAT_TIMER_ICON] = gi.imageindex ("p_rebreather");
-		ent->client->ps.stats[STAT_TIMER] = (ent->client->breather_framenum - level.framenum)/10;
+		ent->client->ps.stats[STAT_TIMER_ICON] = (int16)gi.imageindex("p_rebreather");
+		ent->client->ps.stats[STAT_TIMER] = (int16)((ent->client->breather_framenum - level.framenum)/10);
 	}
 	else
 	{
@@ -486,9 +486,9 @@ void G_SetStats (edict_t *ent)
 	if (ent->client->pers.selected_item == -1)
 		ent->client->ps.stats[STAT_SELECTED_ICON] = 0;
 	else
-		ent->client->ps.stats[STAT_SELECTED_ICON] = gi.imageindex (itemlist[ent->client->pers.selected_item].icon);
+		ent->client->ps.stats[STAT_SELECTED_ICON] = (int16)gi.imageindex(itemlist[ent->client->pers.selected_item].icon);
 
-	ent->client->ps.stats[STAT_SELECTED_ITEM] = ent->client->pers.selected_item;
+	ent->client->ps.stats[STAT_SELECTED_ITEM] = (int16)ent->client->pers.selected_item;
 
 	//
 	// layouts
@@ -514,16 +514,16 @@ void G_SetStats (edict_t *ent)
 	//
 	// frags
 	//
-	ent->client->ps.stats[STAT_FRAGS] = ent->client->resp.score;
+	ent->client->ps.stats[STAT_FRAGS] = (int16)ent->client->resp.score;
 
 	//
 	// help icon / current weapon if not shown
 	//
 	if (ent->client->pers.helpchanged && (level.framenum&8) )
-		ent->client->ps.stats[STAT_HELPICON] = gi.imageindex ("i_help");
+		ent->client->ps.stats[STAT_HELPICON] = (int16)gi.imageindex("i_help");
 	else if ( (ent->client->pers.hand == CENTER_HANDED || ent->client->ps.fov > 91)
 		&& ent->client->pers.weapon)
-		ent->client->ps.stats[STAT_HELPICON] = gi.imageindex (ent->client->pers.weapon->icon);
+		ent->client->ps.stats[STAT_HELPICON] = (int16)gi.imageindex(ent->client->pers.weapon->icon);
 	else
 		ent->client->ps.stats[STAT_HELPICON] = 0;
 
@@ -571,8 +571,8 @@ void G_SetSpectatorStats (edict_t *ent)
 		cl->ps.stats[STAT_LAYOUTS] |= 2;
 
 	if (cl->chase_target && cl->chase_target->inuse)
-		cl->ps.stats[STAT_CHASE] = CS_PLAYERSKINS + 
-			(cl->chase_target - g_edicts) - 1;
+		cl->ps.stats[STAT_CHASE] = (int16)(CS_PLAYERSKINS + 
+			(cl->chase_target - g_edicts) - 1);
 	else
 		cl->ps.stats[STAT_CHASE] = 0;
 }

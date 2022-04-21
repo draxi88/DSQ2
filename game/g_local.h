@@ -21,7 +21,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "q_shared.h"
 
-
 // define GAME_INCLUDE so that game.h does not define the
 // short, server-visible gclient_t and edict_t structures,
 // because we define the full size ones in this file
@@ -33,7 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "dsq2.h"
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"DSq2"
+#define	GAMEVERSION	"DSQ2"
 
 // protocol bytes that can be directly added to messages
 #define	svc_muzzleflash		1
@@ -42,13 +41,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	svc_layout			4
 #define	svc_inventory		5
 #define	svc_stufftext		11
-#define	svc_configstring	13//DSQ2
 
 //==================================================================
 
 // view pitching times
-#define DAMAGE_TIME		0.5
-#define	FALL_TIME		0.3
+#define DAMAGE_TIME		0.5f
+#define	FALL_TIME		0.3f
 
 
 // edict->spawnflags
@@ -76,7 +74,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define FL_RESPAWN				0x80000000	// used for item respawning
 
 
-#define	FRAMETIME		0.1
+#define	FRAMETIME		0.1f
 
 // memory tags to allow dynamic memory to be cleaned up
 #define	TAG_GAME	765		// clear when unloading the dll
@@ -266,7 +264,6 @@ typedef struct gitem_s
 	char		*precaches;		// string of all models, sounds, and images this item will use
 
 	//dsq2
-	int			level;
 	char		menuname[32];
 	int			dropcount;		// couldn't use quantity on the random drops. 
 } gitem_t;
@@ -521,8 +518,12 @@ extern	edict_t			*g_edicts;
 #define	LLOFS(x) (int)&(((level_locals_t *)0)->x)
 #define	CLOFS(x) (int)&(((gclient_t *)0)->x)
 
+#ifdef random
+#undef random
+#endif
+
 #define random()	((rand () & 0x7fff) / ((float)0x7fff))
-#define crandom()	(2.0 * (random() - 0.5))
+#define crandom()	(2.0f * (random() - 0.5f))
 
 extern	cvar_t	*maxentities;
 extern	cvar_t	*deathmatch;
@@ -533,7 +534,6 @@ extern	cvar_t	*fraglimit;
 extern	cvar_t	*timelimit;
 extern	cvar_t	*password;
 extern	cvar_t	*spectator_password;
-extern	cvar_t	*needpass;
 extern	cvar_t	*g_select_empty;
 extern	cvar_t	*dedicated;
 
@@ -622,7 +622,7 @@ void InitItems (void);
 void SetItemNames (void);
 gitem_t	*FindItem (char *pickup_name);
 gitem_t	*FindItemByClassname (char *classname);
-#define	ITEM_INDEX(x) ((x)-itemlist)
+#define	ITEM_INDEX(x) ((int)((x)-itemlist))
 edict_t *Drop_Item (edict_t *ent, gitem_t *item);
 void SetRespawn (edict_t *ent, float delay);
 void ChangeWeapon (edict_t *ent);
@@ -638,7 +638,7 @@ void Touch_Item (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf
 // g_utils.c
 //
 qboolean	KillBox (edict_t *ent);
-void	G_ProjectSource (vec3_t point, vec3_t distance, vec3_t forward, vec3_t right, vec3_t result);
+void	G_ProjectSource (vec3_t point, const vec3_t distance, vec3_t forward, vec3_t right, vec3_t result);
 edict_t *G_Find (edict_t *from, int fieldofs, char *match);
 edict_t *findradius (edict_t *from, vec3_t org, float rad);
 edict_t *G_PickTarget (char *targetname);
@@ -739,7 +739,7 @@ void ThrowDebris (edict_t *self, char *modelname, float speed, vec3_t origin);
 qboolean fire_hit (edict_t *self, vec3_t aim, int damage, int kick);
 void fire_bullet (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick, int hspread, int vspread, int mod);
 void fire_shotgun (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick, int hspread, int vspread, int count, int mod);
-void fire_blaster (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, int effect, qboolean hyper);
+void fire_blaster (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, int effect, qboolean hyperb);
 void fire_grenade (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, float timer, float damage_radius);
 void fire_grenade2 (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, float timer, float damage_radius, qboolean held);
 void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, float damage_radius, int radius_damage);
@@ -879,8 +879,10 @@ typedef struct
 	short dmg_blaster;
 	short dmg_shotgun;
 	short dmg_sshotgun;
-	short dmg_bullet;
+	short dmg_machinegun;
+	short dmg_chaingun;
 	short dmg_grenade;
+	short dmg_glauncher;
 	short dmg_rocket;
 	short dmg_hyperblaster;
 	short dmg_railgun;
@@ -902,6 +904,7 @@ typedef struct
 	qboolean CombatArmor;
 	qboolean BodyArmor;
 
+	int	levels[256];
 } client_persistant_t;
 
 // client data that stays across deathmatch respawns
@@ -913,7 +916,6 @@ typedef struct
 	vec3_t		cmd_angles;			// angles sent over in the last command
 
 	qboolean	spectator;			// client is a spectator
-
 
 	//DSq2
 	unsigned int	health_flask;
@@ -1011,15 +1013,6 @@ struct gclient_s
 	qboolean	update_chase;		// need to update chase info?
 };
 
-typedef enum {
-	NONE,
-	SHELLS,
-	BULLETS,
-	GRENADES,
-	ROCKETS,
-	CELLS,
-	SLUGS
-} ammo_type_t;
 
 struct edict_s
 {
@@ -1168,5 +1161,8 @@ struct edict_s
 	// common data blocks
 	moveinfo_t		moveinfo;
 	monsterinfo_t	monsterinfo;
-	ammo_type_t		ammo_type;
+
+	//DSQ2
+	ammo_t			ammo_type;
 };
+

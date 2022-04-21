@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "g_local.h"
 
 
-void G_ProjectSource (vec3_t point, vec3_t distance, vec3_t forward, vec3_t right, vec3_t result)
+void G_ProjectSource (vec3_t point, const vec3_t distance, vec3_t forward, vec3_t right, vec3_t result)
 {
 	result[0] = point[0] + forward[0] * distance[0] + right[0] * distance[1];
 	result[1] = point[1] + forward[1] * distance[0] + right[1] * distance[1];
@@ -91,7 +91,7 @@ edict_t *findradius (edict_t *from, vec3_t org, float rad)
 		if (from->solid == SOLID_NOT)
 			continue;
 		for (j=0 ; j<3 ; j++)
-			eorg[j] = org[j] - (from->s.origin[j] + (from->mins[j] + from->maxs[j])*0.5);
+			eorg[j] = org[j] - (from->s.origin[j] + (from->mins[j] + from->maxs[j])*0.5f);
 		if (VectorLength(eorg) > rad)
 			continue;
 		return from;
@@ -214,7 +214,7 @@ void G_UseTargets (edict_t *ent, edict_t *activator)
 	if (ent->killtarget)
 	{
 		t = NULL;
-		while ((t = G_Find (t, FOFS(targetname), ent->killtarget)))
+		while ((t = G_Find (t, FOFS(targetname), ent->killtarget)) != NULL)
 		{
 			G_FreeEdict (t);
 			if (!ent->inuse)
@@ -231,7 +231,7 @@ void G_UseTargets (edict_t *ent, edict_t *activator)
 	if (ent->target)
 	{
 		t = NULL;
-		while ((t = G_Find (t, FOFS(targetname), ent->target)))
+		while ((t = G_Find (t, FOFS(targetname), ent->target)) != NULL)
 		{
 			// doors fire area portals in a specific way
 			if (!Q_stricmp(t->classname, "func_areaportal") &&
@@ -346,7 +346,7 @@ float vectoyaw (vec3_t vec)
 	} 
 	else
 	{
-		yaw = (int) (atan2(vec[YAW], vec[PITCH]) * 180 / M_PI);
+		yaw = (float)(int)(atan2(vec[YAW], vec[PITCH]) * 180 / M_PI);
 		if (yaw < 0)
 			yaw += 360;
 	}
@@ -371,7 +371,7 @@ void vectoangles (vec3_t value1, vec3_t angles)
 	else
 	{
 		if (value1[0])
-			yaw = (int) (atan2(value1[1], value1[0]) * 180 / M_PI);
+			yaw = (float)(int)(atan2(value1[1], value1[0]) * 180 / M_PI);
 		else if (value1[1] > 0)
 			yaw = 90;
 		else
@@ -379,8 +379,8 @@ void vectoangles (vec3_t value1, vec3_t angles)
 		if (yaw < 0)
 			yaw += 360;
 
-		forward = sqrt (value1[0]*value1[0] + value1[1]*value1[1]);
-		pitch = (int) (atan2(value1[2], forward) * 180 / M_PI);
+		forward = (float)sqrt(value1[0]*value1[0] + value1[1]*value1[1]);
+		pitch = (float)(int)(atan2(value1[2], forward) * 180 / M_PI);
 		if (pitch < 0)
 			pitch += 360;
 	}
@@ -404,7 +404,7 @@ void G_InitEdict (edict_t *e)
 {
 	e->inuse = true;
 	e->classname = "noclass";
-	e->gravity = 1.0;
+	e->gravity = 1.0f;
 	e->s.number = e - g_edicts;
 }
 
@@ -425,7 +425,7 @@ edict_t *G_Spawn (void)
 	edict_t		*e;
 
 	e = &g_edicts[(int)maxclients->value+1];
-	for ( i=maxclients->value+1 ; i<globals.num_edicts ; i++, e++)
+	for ( i=(int)(maxclients->value+1) ; i<globals.num_edicts ; i++, e++)
 	{
 		// the first couple seconds of server time can involve a lot of
 		// freeing and allocating, so relax the replacement policy

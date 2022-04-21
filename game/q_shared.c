@@ -19,15 +19,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "q_shared.h"
 
-#define DEG2RAD( a ) ( a * M_PI ) / 180.0F
+#define DEG2RAD( a ) (( a * M_PI ) / 180.0F)
 
 vec3_t vec3_origin = {0,0,0};
 
 //============================================================================
-
-#ifdef _WIN32
-#pragma optimize( "", off )
-#endif
 
 void RotatePointAroundVector( vec3_t dst, const vec3_t dir, const vec3_t point, float degrees )
 {
@@ -36,7 +32,7 @@ void RotatePointAroundVector( vec3_t dst, const vec3_t dir, const vec3_t point, 
 	float	zrot[3][3];
 	float	tmpmat[3][3];
 	float	rot[3][3];
-	int	i;
+
 	vec3_t vr, vup, vf;
 
 	vf[0] = dir[0];
@@ -58,53 +54,73 @@ void RotatePointAroundVector( vec3_t dst, const vec3_t dir, const vec3_t point, 
 	m[1][2] = vf[1];
 	m[2][2] = vf[2];
 
-	memcpy( im, m, sizeof( im ) );
+	//r1: copies a bunch of stuff we overwrite, better to do individually
+	//memcpy( im, m, sizeof( im ) );
 
+	im[0][0] = m[0][0]; //r1
 	im[0][1] = m[1][0];
 	im[0][2] = m[2][0];
+
 	im[1][0] = m[0][1];
+	im[1][1] = m[1][1]; //r1
 	im[1][2] = m[2][1];
+
 	im[2][0] = m[0][2];
 	im[2][1] = m[1][2];
+	im[2][2] = m[2][2]; //r1
 
-	memset( zrot, 0, sizeof( zrot ) );
-	zrot[0][0] = zrot[1][1] = zrot[2][2] = 1.0F;
+	//wtf?
+	//memset( zrot, 0, sizeof( zrot ) );
+	//zrot[0][0] = zrot[1][1] = zrot[2][2] = 1.0F;
 
-	zrot[0][0] = cos( DEG2RAD( degrees ) );
-	zrot[0][1] = sin( DEG2RAD( degrees ) );
-	zrot[1][0] = -sin( DEG2RAD( degrees ) );
-	zrot[1][1] = cos( DEG2RAD( degrees ) );
+	zrot[0][0] = (float)cos( DEG2RAD( degrees ) );
+	zrot[0][1] = (float)sin( DEG2RAD( degrees ) );
+	zrot[0][2] = 0;
+
+	zrot[1][0] = (float)-sin( DEG2RAD( degrees ) );
+	zrot[1][1] = (float)cos( DEG2RAD( degrees ) );
+	zrot[1][2] = 0;
+
+	zrot[2][0] = 0.0f;
+	zrot[2][1] = 0.0f;
+	zrot[2][2] = 1.0f;
 
 	R_ConcatRotations( m, zrot, tmpmat );
 	R_ConcatRotations( tmpmat, im, rot );
 
-	for ( i = 0; i < 3; i++ )
-	{
-		dst[i] = rot[i][0] * point[0] + rot[i][1] * point[1] + rot[i][2] * point[2];
-	}
+	dst[0] = rot[0][0] * point[0] + rot[0][1] * point[1] + rot[0][2] * point[2];
+	dst[1] = rot[1][0] * point[0] + rot[1][1] * point[1] + rot[1][2] * point[2];
+	dst[2] = rot[2][0] * point[0] + rot[2][1] * point[1] + rot[2][2] * point[2];
 }
 
-#ifdef _WIN32
-#pragma optimize( "", on )
+void _Q_assert (char *expression, char *function, uint32 line)
+{
+	Com_Printf ("Q_assert: Assertion '%s' failed on %s:%u\n", LOG_GENERAL, expression, function, line);
+#ifndef GAME_DLL
+	//Sys_DebugBreak ();
 #endif
+}
 
-
-
-void AngleVectors (vec3_t angles, vec3_t forward, vec3_t right, vec3_t up)
+void AngleVectors (vec3_t angles, vec3_t /*@out@*//*@null@*/ forward, vec3_t /*@out@*//*@null@*/right, vec3_t /*@out@*//*@null@*/up)
 {
 	float		angle;
 	static float		sr, sp, sy, cr, cp, cy;
 	// static to help MS compiler fp bugs
 
-	angle = angles[YAW] * (M_PI*2 / 360);
-	sy = sin(angle);
-	cy = cos(angle);
-	angle = angles[PITCH] * (M_PI*2 / 360);
-	sp = sin(angle);
-	cp = cos(angle);
-	angle = angles[ROLL] * (M_PI*2 / 360);
-	sr = sin(angle);
-	cr = cos(angle);
+	angle = angles[YAW] * M_PI2_DIV_360;
+	sy = (float)sin(angle);
+	cy = (float)cos(angle);
+
+	angle = angles[PITCH] * M_PI2_DIV_360;
+	sp = (float)sin(angle);
+	cp = (float)cos(angle);
+
+	if (right || up)
+	{
+		angle = angles[ROLL] * M_PI2_DIV_360;
+		sr = (float)sin(angle);
+		cr = (float)cos(angle);
+	}
 
 	if (forward)
 	{
@@ -112,12 +128,14 @@ void AngleVectors (vec3_t angles, vec3_t forward, vec3_t right, vec3_t up)
 		forward[1] = cp*sy;
 		forward[2] = -sp;
 	}
+
 	if (right)
 	{
 		right[0] = (-1*sr*sp*cy+-1*cr*-sy);
 		right[1] = (-1*sr*sp*sy+-1*cr*cy);
 		right[2] = -1*sr*cp;
 	}
+
 	if (up)
 	{
 		up[0] = (cr*sp*cy+-sr*-sy);
@@ -154,20 +172,19 @@ void PerpendicularVector( vec3_t dst, const vec3_t src )
 	int	pos;
 	int i;
 	float minelem = 1.0F;
-	vec3_t tempvec;
+	vec3_t tempvec = {0.0, 0.0, 0.0};
 
 	/*
 	** find the smallest magnitude axially aligned vector
 	*/
 	for ( pos = 0, i = 0; i < 3; i++ )
 	{
-		if ( fabs( src[i] ) < minelem )
+		if ( (float)fabs( src[i] ) < minelem )
 		{
 			pos = i;
-			minelem = fabs( src[i] );
+			minelem = (float)(float)fabs( src[i] );
 		}
 	}
-	tempvec[0] = tempvec[1] = tempvec[2] = 0.0F;
 	tempvec[pos] = 1.0F;
 
 	/*
@@ -247,31 +264,102 @@ void R_ConcatTransforms (float in1[3][4], float in2[3][4], float out[3][4])
 
 //============================================================================
 
+//int sse2_enabled = 0;
 
-float Q_fabs (float f)
+#if defined _M_IX86 && !defined C_ONLY && !defined linux && !defined SSE2
+
+
+/*__declspec( naked ) void __cdecl Q_ftol2( float f, int *out )
 {
-#if 0
-	if (f >= 0)
-		return f;
-	return -f;
-#else
-	int tmp = * ( int * ) &f;
-	tmp &= 0x7FFFFFFF;
-	return * ( float * ) &tmp;
-#endif
+	__asm fld dword ptr [esp+4]
+	__asm fistp dword ptr [esp+8]
+	__asm ret
+}*/
+
+__declspec( naked ) int EXPORT Q_ftol( float f )
+{
+	__asm
+	{
+		fld dword ptr [esp+4]
+		push eax
+		fistp dword ptr [esp]
+		pop eax
+		ret
+	}
 }
 
-#if defined _M_IX86 && !defined C_ONLY
-#pragma warning (disable:4035)
-__declspec( naked ) long Q_ftol( float f )
+/*__declspec( naked ) void __cdecl Q_ftolsse( float f, int *out )
 {
-	static int tmp;
-	__asm fld dword ptr [esp+4]
-	__asm fistp tmp
-	__asm mov eax, tmp
+	__asm movd xmm0, [esp+4]
+	__asm cvttss2si eax, xmm0
+	__asm mov [esp+8], eax
 	__asm ret
 }
-#pragma warning (default:4035)
+
+__declspec( naked ) void __cdecl Q_ftol( float f, int *out )
+{
+	__asm cmp sse2_enabled, 0
+	__asm jz nonsse
+	__asm call Q_ftolsse
+	__asm ret
+nonsse:
+	__asm call Q_ftol86
+	__asm ret
+}
+
+__declspec (naked) void __cdecl Q_sseinit (void)
+{
+	__asm mov eax, 1
+	__asm cpuid
+	__asm test edx, 4000000h
+	__asm jz nosse
+	__asm mov sse2_enabled, 1
+nosse:
+	__asm ret
+}*/
+
+__declspec (naked) void EXPORT Q_fastfloats (float *f, int *outptr)
+{
+	/*__asm cmp sse2_enabled, 0
+	__asm jz nonsse
+	__asm mov eax, [esp+4]
+	__asm movups xmm1, [eax]
+	__asm cvttps2dq xmm0, xmm1
+	__asm mov eax, [esp+8]
+	__asm movdqu [eax], xmm0
+	__asm ret
+nonsse:*/
+	__asm mov eax, [esp+8]
+	__asm mov ebx, [esp+4]
+
+	__asm fld dword ptr [ebx]
+	__asm fistp dword ptr [eax]
+	__asm fld dword ptr [ebx+4]
+	__asm fistp dword ptr [eax+4]
+	__asm fld dword ptr [ebx+8]
+	__asm fistp dword ptr [eax+8]
+	__asm ret
+}
+
+#else
+
+int EXPORT Q_ftol( float f )
+{
+	return (int)f;
+}
+
+void EXPORT Q_fastfloats (float *f, int *outptr)
+{
+	outptr[0] = (int)f[0];
+	outptr[1] = (int)f[1];
+	outptr[2] = (int)f[2];
+}
+
+/*void Q_ftol2 (float f, int *out)
+{
+	*out = (int)f;
+}*/
+
 #endif
 
 /*
@@ -297,13 +385,15 @@ float	anglemod(float a)
 		a -= 360*(int)(a/360);
 	else
 		a += 360*( 1 + (int)(-a/360) );
+#else
+	//a = (0.0054931640625f) * ((int)(a*(182.0444444444444444444444444444444444444444444444444444444444444444f))& 65535);
+	a = (360.0f/65536.0f) * ((int)(a*(65536.0f/360.0f)) & 65535);
 #endif
-	a = (360.0/65536) * ((int)(a*(65536/360.0)) & 65535);
 	return a;
 }
 
-	int		i;
-	vec3_t	corners[2];
+//int		i;
+//vec3_t	corners[2];
 
 
 // this is the slow, general version
@@ -316,7 +406,7 @@ int BoxOnPlaneSide2 (vec3_t emins, vec3_t emaxs, struct cplane_s *p)
 
 	for (i=0 ; i<3 ; i++)
 	{
-		if (p->normal[i] < 0)
+		if (FLOAT_LT_ZERO(p->normal[i]))
 		{
 			corners[0][i] = emins[i];
 			corners[1][i] = emaxs[i];
@@ -330,9 +420,9 @@ int BoxOnPlaneSide2 (vec3_t emins, vec3_t emaxs, struct cplane_s *p)
 	dist1 = DotProduct (p->normal, corners[0]) - p->dist;
 	dist2 = DotProduct (p->normal, corners[1]) - p->dist;
 	sides = 0;
-	if (dist1 >= 0)
+	if (FLOAT_GE_ZERO(dist1))
 		sides = 1;
-	if (dist2 < 0)
+	if (FLOAT_LT_ZERO(dist2))
 		sides |= 2;
 
 	return sides;
@@ -345,21 +435,23 @@ BoxOnPlaneSide
 Returns 1, 2, or 1 + 2
 ==================
 */
-#if !id386 || defined __linux__ 
-int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, struct cplane_s *p)
+#if !id386 || defined __linux__ || defined __FreeBSD__
+int EXPORT BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, struct cplane_s *p)
 {
 	float	dist1, dist2;
 	int		sides;
 
 // fast axial cases
-	if (p->type < 3)
+	//r1: these never seem to hit?
+	/*if (p->type < 3)
 	{
+		Sys_DebugBreak ();
 		if (p->dist <= emins[p->type])
 			return 1;
 		if (p->dist >= emaxs[p->type])
 			return 2;
 		return 3;
-	}
+	}*/
 	
 // general case
 	switch (p->signbits)
@@ -398,7 +490,6 @@ dist2 = p->normal[0]*emaxs[0] + p->normal[1]*emaxs[1] + p->normal[2]*emaxs[2];
 		break;
 	default:
 		dist1 = dist2 = 0;		// shut up compiler
-		assert( 0 );
 		break;
 	}
 
@@ -408,47 +499,42 @@ dist2 = p->normal[0]*emaxs[0] + p->normal[1]*emaxs[1] + p->normal[2]*emaxs[2];
 	if (dist2 < p->dist)
 		sides |= 2;
 
-	assert( sides != 0 );
-
 	return sides;
 }
 #else
-#pragma warning( disable: 4035 )
+//#pragma warning( disable: 4035 )
 
-__declspec( naked ) int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, struct cplane_s *p)
+__declspec( naked ) int __cdecl BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, struct cplane_s *p)
 {
-	static int bops_initialized;
+	//static int bops_initialized;
 	static int Ljmptab[8];
 
-	__asm {
-
+	__asm
+	{
+		push esi
 		push ebx
-			
-		cmp bops_initialized, 1
-		je  initialized
-		mov bops_initialized, 1
 		
-		mov Ljmptab[0*4], offset Lcase0
-		mov Ljmptab[1*4], offset Lcase1
-		mov Ljmptab[2*4], offset Lcase2
-		mov Ljmptab[3*4], offset Lcase3
-		mov Ljmptab[4*4], offset Lcase4
-		mov Ljmptab[5*4], offset Lcase5
-		mov Ljmptab[6*4], offset Lcase6
-		mov Ljmptab[7*4], offset Lcase7
+		lea eax, Ljmptab
+
+		cmp dword ptr [eax], 0
+		je short notinitialized
+		//mov bops_initialized, 1
 			
 initialized:
 
-		mov edx,ds:dword ptr[4+12+esp]
-		mov ecx,ds:dword ptr[4+4+esp]
-		xor eax,eax
-		mov ebx,ds:dword ptr[4+8+esp]
-		mov al,ds:byte ptr[17+edx]
-		cmp al,8
-		jge Lerror
+		mov ecx,ds:dword ptr[8+4+esp]
+		mov ebx,ds:dword ptr[8+8+esp]
+		mov edx,ds:dword ptr[8+12+esp]
+		;xor eax,eax
+		;mov al,ds:byte ptr[17+edx]
+		movzx esi, ds:byte ptr[17+edx]
+		;r1 - removed, Lerror will crash and so will illegal access, this should
+		;never happen anyway and just causes a branch
+		;cmp al,8
+		;jge Lerror
 		fld ds:dword ptr[0+edx]
 		fld st(0)
-		jmp dword ptr[Ljmptab+eax*4]
+		jmp dword ptr[eax+esi*4]
 Lcase0:
 		fmul ds:dword ptr[ebx]
 		fld ds:dword ptr[0+4+edx]
@@ -470,7 +556,7 @@ Lcase0:
 		faddp st(3),st(0)
 		fxch st(3)
 		faddp st(2),st(0)
-		jmp LSetSides
+		jmp short LSetSides
 Lcase1:
 		fmul ds:dword ptr[ecx]
 		fld ds:dword ptr[0+4+edx]
@@ -492,7 +578,7 @@ Lcase1:
 		faddp st(3),st(0)
 		fxch st(3)
 		faddp st(2),st(0)
-		jmp LSetSides
+		jmp short LSetSides
 Lcase2:
 		fmul ds:dword ptr[ebx]
 		fld ds:dword ptr[0+4+edx]
@@ -514,7 +600,7 @@ Lcase2:
 		faddp st(3),st(0)
 		fxch st(3)
 		faddp st(2),st(0)
-		jmp LSetSides
+		jmp short LSetSides
 Lcase3:
 		fmul ds:dword ptr[ecx]
 		fld ds:dword ptr[0+4+edx]
@@ -536,7 +622,7 @@ Lcase3:
 		faddp st(3),st(0)
 		fxch st(3)
 		faddp st(2),st(0)
-		jmp LSetSides
+		jmp short LSetSides
 Lcase4:
 		fmul ds:dword ptr[ebx]
 		fld ds:dword ptr[0+4+edx]
@@ -558,7 +644,7 @@ Lcase4:
 		faddp st(3),st(0)
 		fxch st(3)
 		faddp st(2),st(0)
-		jmp LSetSides
+		jmp short LSetSides
 Lcase5:
 		fmul ds:dword ptr[ecx]
 		fld ds:dword ptr[0+4+edx]
@@ -580,7 +666,7 @@ Lcase5:
 		faddp st(3),st(0)
 		fxch st(3)
 		faddp st(2),st(0)
-		jmp LSetSides
+		jmp short LSetSides
 Lcase6:
 		fmul ds:dword ptr[ebx]
 		fld ds:dword ptr[0+4+edx]
@@ -602,7 +688,7 @@ Lcase6:
 		faddp st(3),st(0)
 		fxch st(3)
 		faddp st(2),st(0)
-		jmp LSetSides
+		jmp short LSetSides
 Lcase7:
 		fmul ds:dword ptr[ecx]
 		fld ds:dword ptr[0+4+edx]
@@ -624,6 +710,10 @@ Lcase7:
 		faddp st(3),st(0)
 		fxch st(3)
 		faddp st(2),st(0)
+
+		;padding for LSetsides
+		lea esp, [esp]
+		lea esp, [esp]
 LSetSides:
 		faddp st(2),st(0)
 		fcomp ds:dword ptr[12+edx]
@@ -638,50 +728,62 @@ LSetSides:
 		add ah,ah
 		add cl,ah
 		pop ebx
+		pop esi
 		mov eax,ecx
 		ret
-Lerror:
-		int 3
+//Lerror:
+//		int 3
+notinitialized:
+		mov dword ptr [eax], offset Lcase0
+		mov dword ptr [eax+4], offset Lcase1
+		mov dword ptr [eax+8], offset Lcase2
+		mov dword ptr [eax+12], offset Lcase3
+		mov dword ptr [eax+16], offset Lcase4
+		mov dword ptr [eax+20], offset Lcase5
+		mov dword ptr [eax+24], offset Lcase6
+		mov dword ptr [eax+28], offset Lcase7
+		jmp initialized
 	}
 }
-#pragma warning( default: 4035 )
+//#pragma warning( default: 4035 )
 #endif
 
-void ClearBounds (vec3_t mins, vec3_t maxs)
+/*void ClearBounds (vec3_t mins, vec3_t maxs)
 {
 	mins[0] = mins[1] = mins[2] = 99999;
 	maxs[0] = maxs[1] = maxs[2] = -99999;
-}
+}*/
 
 void AddPointToBounds (vec3_t v, vec3_t mins, vec3_t maxs)
 {
-	int		i;
-	vec_t	val;
+	if (v[0] < mins[0])
+		mins[0] = v[0];
 
-	for (i=0 ; i<3 ; i++)
-	{
-		val = v[i];
-		if (val < mins[i])
-			mins[i] = val;
-		if (val > maxs[i])
-			maxs[i] = val;
-	}
+	if (v[0] > maxs[0])
+		maxs[0] = v[0];
+
+	if (v[1] < mins[1])
+		mins[1] = v[1];
+
+	if (v[1] > maxs[1])
+		maxs[1] = v[1];
+
+	if (v[2] < mins[2])
+		mins[2] = v[2];
+
+	if (v[2] > maxs[2])
+		maxs[2] = v[2];
 }
 
-int VectorDistance(vec3_t v1, vec3_t v2) {
-	vec3_t output;
-	VectorSubtract(v1, v2, output);
-	return VectorLength(output);
-}
 
-
-int VectorCompare (vec3_t v1, vec3_t v2)
+//r1: macroified
+/*int VectorCompare (vec3_t v1, vec3_t v2)
 {
 	if (v1[0] != v2[0] || v1[1] != v2[1] || v1[2] != v2[2])
 			return 0;
 			
 	return 1;
-}
+}*/
 
 
 vec_t VectorNormalize (vec3_t v)
@@ -689,9 +791,9 @@ vec_t VectorNormalize (vec3_t v)
 	float	length, ilength;
 
 	length = v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
-	length = sqrt (length);		// FIXME
+	length = (float)sqrt (length);		// FIXME
 
-	if (length)
+	if (FLOAT_NE_ZERO(length))
 	{
 		ilength = 1/length;
 		v[0] *= ilength;
@@ -708,9 +810,9 @@ vec_t VectorNormalize2 (vec3_t v, vec3_t out)
 	float	length, ilength;
 
 	length = v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
-	length = sqrt (length);		// FIXME
+	length = (float)sqrt (length);		// FIXME
 
-	if (length)
+	if (FLOAT_NE_ZERO(length))
 	{
 		ilength = 1/length;
 		out[0] = v[0]*ilength;
@@ -719,15 +821,14 @@ vec_t VectorNormalize2 (vec3_t v, vec3_t out)
 	}
 		
 	return length;
-
 }
 
-void VectorMA (vec3_t veca, float scale, vec3_t vecb, vec3_t vecc)
+/*void VectorMA (vec3_t veca, float scale, vec3_t vecb, vec3_t vecc)
 {
 	vecc[0] = veca[0] + scale*vecb[0];
 	vecc[1] = veca[1] + scale*vecb[1];
 	vecc[2] = veca[2] + scale*vecb[2];
-}
+}*/
 
 
 vec_t _DotProduct (vec3_t v1, vec3_t v2)
@@ -756,29 +857,37 @@ void _VectorCopy (vec3_t in, vec3_t out)
 	out[2] = in[2];
 }
 
-void CrossProduct (vec3_t v1, vec3_t v2, vec3_t cross)
+/*void CrossProduct (vec3_t v1, vec3_t v2, vec3_t cross)
 {
 	cross[0] = v1[1]*v2[2] - v1[2]*v2[1];
 	cross[1] = v1[2]*v2[0] - v1[0]*v2[2];
 	cross[2] = v1[0]*v2[1] - v1[1]*v2[0];
-}
+}*/
 
-double sqrt(double x);
+double EXPORT sqrt(double x);
 
 vec_t VectorLength(vec3_t v)
 {
-	int		i;
 	float	length;
 	
 	length = 0;
-	for (i=0 ; i< 3 ; i++)
-		length += v[i]*v[i];
-	length = sqrt (length);		// FIXME
+
+	length += v[0]*v[0];
+	length += v[1]*v[1];
+	length += v[2]*v[2];
+
+	length = (float)sqrtf (length);		// FIXME
 
 	return length;
 }
 
-void VectorInverse (vec3_t v)
+int VectorDistance(vec3_t v1, vec3_t v2) {
+	vec3_t output;
+	VectorSubtract(v1, v2, output);
+	return VectorLength(output);
+}
+
+/*void VectorInverse (vec3_t v)
 {
 	v[0] = -v[0];
 	v[1] = -v[1];
@@ -790,7 +899,7 @@ void VectorScale (vec3_t in, vec_t scale, vec3_t out)
 	out[0] = in[0]*scale;
 	out[1] = in[1]*scale;
 	out[2] = in[2]*scale;
-}
+}*/
 
 
 int Q_log2(int val)
@@ -815,9 +924,9 @@ char *COM_SkipPath (char *pathname)
 	char	*last;
 	
 	last = pathname;
-	while (*pathname)
+	while (pathname[0])
 	{
-		if (*pathname=='/')
+		if (pathname[0] == '/')
 			last = pathname+1;
 		pathname++;
 	}
@@ -829,7 +938,7 @@ char *COM_SkipPath (char *pathname)
 COM_StripExtension
 ============
 */
-void COM_StripExtension (char *in, char *out)
+void COM_StripExtension (const char *in, char *out)
 {
 	while (*in && *in != '.')
 		*out++ = *in++;
@@ -891,16 +1000,16 @@ COM_FilePath
 Returns the path up to, but not including the last /
 ============
 */
-void COM_FilePath (char *in, char *out)
+void COM_FilePath (const char *in, char *out)
 {
-	char *s;
+	const char *s;
 	
 	s = in + strlen(in) - 1;
 	
 	while (s != in && *s != '/')
 		s--;
 
-	strncpy (out,in, s-in);
+	strncpy (out, in, s-in);
 	out[s-in] = 0;
 }
 
@@ -910,7 +1019,7 @@ void COM_FilePath (char *in, char *out)
 COM_DefaultExtension
 ==================
 */
-void COM_DefaultExtension (char *path, char *extension)
+void COM_DefaultExtension (char *path, const char *extension)
 {
 	char    *src;
 //
@@ -937,25 +1046,11 @@ void COM_DefaultExtension (char *path, char *extension)
 ============================================================================
 */
 
-qboolean	bigendien;
+//r1: endianness sucks. this is a waste of function calls for everything.
+//define Q_BIGENDIAN if you're on a mac or some other big endian system.
 
-// can't just use function pointers, or dll linkage can
-// mess up when qcommon is included in multiple places
-short	(*_BigShort) (short l);
-short	(*_LittleShort) (short l);
-int		(*_BigLong) (int l);
-int		(*_LittleLong) (int l);
-float	(*_BigFloat) (float l);
-float	(*_LittleFloat) (float l);
-
-short	BigShort(short l){return _BigShort(l);}
-short	LittleShort(short l) {return _LittleShort(l);}
-int		BigLong (int l) {return _BigLong(l);}
-int		LittleLong (int l) {return _LittleLong(l);}
-float	BigFloat (float l) {return _BigFloat(l);}
-float	LittleFloat (float l) {return _LittleFloat(l);}
-
-short   ShortSwap (short l)
+//need this for network ports
+int16 ShortSwap (int16 l)
 {
 	byte    b1,b2;
 
@@ -965,12 +1060,7 @@ short   ShortSwap (short l)
 	return (b1<<8) + b2;
 }
 
-short	ShortNoSwap (short l)
-{
-	return l;
-}
-
-int    LongSwap (int l)
+int32 LongSwap (int32 l)
 {
 	byte    b1,b2,b3,b4;
 
@@ -982,7 +1072,27 @@ int    LongSwap (int l)
 	return ((int)b1<<24) + ((int)b2<<16) + ((int)b3<<8) + b4;
 }
 
-int	LongNoSwap (int l)
+#if Q_BIGENDIAN
+
+qboolean	bigendien;
+
+// can't just use function pointers, or dll linkage can
+// mess up when qcommon is included in multiple places
+
+int16	(*_LittleShort) (int16 l);
+int32		(*_LittleLong) (int32 l);
+float	(*_LittleFloat) (float l);
+
+int16	LittleShort(int16 l) {return _LittleShort(l);}
+int32		LittleLong (int32 l) {return _LittleLong(l);}
+float	LittleFloat (float l) {return _LittleFloat(l);}
+
+int16	ShortNoSwap (int16 l)
+{
+	return l;
+}
+
+int32	LongNoSwap (int32 l)
 {
 	return l;
 }
@@ -1019,30 +1129,24 @@ void Swap_Init (void)
 	byte	swaptest[2] = {1,0};
 
 // set the byte swapping variables in a portable manner	
-	if ( *(short *)swaptest == 1)
+	if ( *(int16 *)swaptest == 1)
 	{
 		bigendien = false;
-		_BigShort = ShortSwap;
 		_LittleShort = ShortNoSwap;
-		_BigLong = LongSwap;
 		_LittleLong = LongNoSwap;
-		_BigFloat = FloatSwap;
 		_LittleFloat = FloatNoSwap;
 	}
 	else
 	{
 		bigendien = true;
-		_BigShort = ShortNoSwap;
 		_LittleShort = ShortSwap;
-		_BigLong = LongNoSwap;
 		_LittleLong = LongSwap;
-		_BigFloat = FloatNoSwap;
 		_LittleFloat = FloatSwap;
 	}
-
 }
-
-
+#else
+void Swap_Init (void){}
+#endif
 
 /*
 ============
@@ -1053,16 +1157,20 @@ varargs versions of all text functions.
 FIXME: make this buffer size safe someday
 ============
 */
-char	*va(char *format, ...)
+char	*va(const char *format, ...)
 {
 	va_list		argptr;
-	static char		string[1024];
+
+	static char		string[2][1024];
+	static int		index;
+
+	index  ^= 1;
 	
 	va_start (argptr, format);
-	vsprintf (string, format,argptr);
+	vsnprintf (string[index], sizeof(string[index])-1, format, argptr);
 	va_end (argptr);
 
-	return string;	
+	return string[index];
 }
 
 
@@ -1075,11 +1183,11 @@ COM_Parse
 Parse a token out of a string
 ==============
 */
-char *COM_Parse (char **data_p)
+const char *COM_Parse (const char **data_p)
 {
 	int		c;
 	int		len;
-	char	*data;
+	const char	*data;
 
 	data = *data_p;
 	len = 0;
@@ -1115,18 +1223,17 @@ skipwhite:
 	if (c == '\"')
 	{
 		data++;
-		while (1)
+		for (;;)
 		{
 			c = *data++;
-			if (c=='\"' || !c)
+			if (c== '\"' || !c)
 			{
-				com_token[len] = 0;
-				*data_p = data;
-				return com_token;
+				//bugfix from skuller
+				goto finish;
 			}
 			if (len < MAX_TOKEN_CHARS)
 			{
-				com_token[len] = c;
+				com_token[len] = (char)c;
 				len++;
 			}
 		}
@@ -1137,16 +1244,17 @@ skipwhite:
 	{
 		if (len < MAX_TOKEN_CHARS)
 		{
-			com_token[len] = c;
+			com_token[len] = (char)c;
 			len++;
 		}
 		data++;
 		c = *data;
 	} while (c>32);
 
+finish:
+
 	if (len == MAX_TOKEN_CHARS)
 	{
-//		Com_Printf ("Token exceeded %i chars, discarded.\n", MAX_TOKEN_CHARS);
 		len = 0;
 	}
 	com_token[len] = 0;
@@ -1182,18 +1290,9 @@ void Com_PageInMemory (byte *buffer, int size)
 ============================================================================
 */
 
-// FIXME: replace all Q_stricmp with Q_strcasecmp
-int Q_stricmp (char *s1, char *s2)
-{
-#if defined(WIN32)
-	return _stricmp (s1, s2);
-#else
-	return strcasecmp (s1, s2);
-#endif
-}
-
-
-int Q_strncasecmp (char *s1, char *s2, int n)
+// FIXME: replace all Q_stricmp with Q_stricmp
+#if defined _WIN32 && defined _M_AMD64
+int Q_strncasecmp (const char *s1, const char *s2, size_t n)
 {
 	int		c1, c2;
 	
@@ -1219,25 +1318,33 @@ int Q_strncasecmp (char *s1, char *s2, int n)
 	return 0;		// strings are equal
 }
 
-int Q_strcasecmp (char *s1, char *s2)
+int Q_stricmp (const char *s1, const char *s2)
 {
 	return Q_strncasecmp (s1, s2, 99999);
 }
+#endif
 
 
-
-void Com_sprintf (char *dest, int size, char *fmt, ...)
+int Com_sprintf (char /*@out@*/*dest, int size, const char *fmt, ...)
 {
-	int		len;
+	int			len;
 	va_list		argptr;
-	char	bigbuffer[0x10000];
+	char		bigbuffer[0x10000];
 
 	va_start (argptr,fmt);
-	len = vsprintf (bigbuffer,fmt,argptr);
+	len = Q_vsnprintf (bigbuffer, sizeof(bigbuffer), fmt, argptr);
 	va_end (argptr);
-	if (len >= size)
-		Com_Printf ("Com_sprintf: overflow of %i in %i\n", len, size);
-	strncpy (dest, bigbuffer, size-1);
+
+	if (len == -1 || len == size)
+	{
+		Com_Printf ("Com_sprintf: overflow of size %d\n", LOG_GENERAL, size);
+		len = size-1;
+	}
+
+	bigbuffer[size-1] = '\0';
+	strcpy (dest, bigbuffer);
+
+	return len;
 }
 
 /*
@@ -1256,7 +1363,7 @@ Searches the string for the given
 key and returns the associated value, or an empty string.
 ===============
 */
-char *Info_ValueForKey (char *s, char *key)
+char *Info_ValueForKey (const char *s, const char *key)
 {
 	char	pkey[512];
 	static	char value[2][512];	// use two buffers so compares
@@ -1267,7 +1374,7 @@ char *Info_ValueForKey (char *s, char *key)
 	valueindex ^= 1;
 	if (*s == '\\')
 		s++;
-	while (1)
+	for (;;)
 	{
 		o = pkey;
 		while (*s != '\\')
@@ -1298,20 +1405,52 @@ char *Info_ValueForKey (char *s, char *key)
 	}
 }
 
-void Info_RemoveKey (char *s, char *key)
+qboolean Info_KeyExists (const char *s, const char *key)
+{
+	char	pkey[512];
+	char	*o;
+	
+	if (*s == '\\')
+		s++;
+
+	for (;;)
+	{
+		o = pkey;
+		while (*s != '\\')
+		{
+			if (!*s)
+				return false;
+			*o++ = *s++;
+		}
+		*o = 0;
+		s++;
+
+		while (*s != '\\' && *s)
+			s++;
+
+		if (!strcmp (key, pkey) )
+			return true;
+
+		if (!*s)
+			return false;
+		s++;
+	}
+}
+
+void Info_RemoveKey (char *s, const char *key)
 {
 	char	*start;
 	char	pkey[512];
 	char	value[512];
 	char	*o;
 
-	if (strstr (key, "\\"))
+	if (strchr (key, '\\'))
 	{
-//		Com_Printf ("Can't use a key with a \\\n");
+		Com_Printf ("Info_RemoveKey: Tried to remove illegal key '%s'\n", LOG_WARNING|LOG_GENERAL, key);
 		return;
 	}
 
-	while (1)
+	for (;;)
 	{
 		start = s;
 		if (*s == '\\')
@@ -1337,7 +1476,13 @@ void Info_RemoveKey (char *s, char *key)
 
 		if (!strcmp (key, pkey) )
 		{
-			strcpy (start, s);	// remove this part
+			//r1: overlapping src+dst with strcpy = no
+			//strcpy (start, s);	// remove this part
+			size_t memlen;
+
+			memlen = strlen(s);
+			memmove (start, s, memlen);
+			start[memlen] = 0;
 			return;
 		}
 
@@ -1356,53 +1501,68 @@ Some characters are illegal in info strings because they
 can mess up the server's parsing
 ==================
 */
-qboolean Info_Validate (char *s)
+qboolean Info_Validate (const char *s)
 {
-	if (strstr (s, "\""))
+	if (strchr (s, '"'))
 		return false;
-	if (strstr (s, ";"))
+
+	if (strchr (s, ';'))
 		return false;
+
 	return true;
 }
 
-void Info_SetValueForKey (char *s, char *key, char *value)
+qboolean Info_CheckBytes (const char *s)
+{
+	while (s[0])
+	{
+		if (s[0] < 32 || s[0] >= 127)
+			return false;
+		s++;
+	}
+
+	return true;
+}
+
+void Info_SetValueForKey (char *s, const char *key, const char *value)
 {
 	char	newi[MAX_INFO_STRING], *v;
 	int		c;
-	int		maxsize = MAX_INFO_STRING;
 
-	if (strstr (key, "\\") || strstr (value, "\\") )
+	if (strchr (key, '\\') || strchr (value, '\\') )
 	{
-		Com_Printf ("Can't use keys or values with a \\\n");
+		Com_Printf ("Can't use keys or values with a \\ (attempted to set key '%s')\n", LOG_GENERAL, key);
 		return;
 	}
 
-	if (strstr (key, ";") )
+	if (strchr (key, ';') || strchr (value, ';') )
 	{
-		Com_Printf ("Can't use keys or values with a semicolon\n");
+		Com_Printf ("Can't use keys or values with a semicolon (attempted to set key '%s')\n", LOG_GENERAL, key);
 		return;
 	}
 
-	if (strstr (key, "\"") || strstr (value, "\"") )
+	if (strchr (key, '"') || strchr (value, '"') )
 	{
-		Com_Printf ("Can't use keys or values with a \"\n");
+		Com_Printf ("Can't use keys or values with a \" (attempted to set key '%s')\n", LOG_GENERAL, key);
 		return;
 	}
 
 	if (strlen(key) > MAX_INFO_KEY-1 || strlen(value) > MAX_INFO_KEY-1)
 	{
-		Com_Printf ("Keys and values must be < 64 characters.\n");
+		Com_Printf ("Keys and values must be < 64 characters (attempted to set key '%s')\n", LOG_GENERAL, key);
 		return;
 	}
+
 	Info_RemoveKey (s, key);
-	if (!value || !strlen(value))
+
+	if (!value || !value[0])
 		return;
 
 	Com_sprintf (newi, sizeof(newi), "\\%s\\%s", key, value);
 
-	if (strlen(newi) + strlen(s) > maxsize)
+	if (strlen(newi) + strlen(s) > MAX_INFO_STRING)
 	{
-		Com_Printf ("Info string length exceeded\n");
+		Com_Printf ("Info string length exceeded while trying to set '%s'\n", LOG_GENERAL, newi);
 		return;
 	}
 
@@ -1414,11 +1574,233 @@ void Info_SetValueForKey (char *s, char *key, char *value)
 		c = *v++;
 		c &= 127;		// strip high bits
 		if (c >= 32 && c < 127)
-			*s++ = c;
+			*s++ = (char)c;
 	}
-	*s = 0;
+	s[0] = 0;
 }
 
 //====================================================================
 
+#ifndef _WIN32
+int Q_vsnprintf (char *buff, size_t len, const char *fmt, va_list va)
+{
+	int ret;
 
+	ret = vsnprintf (buff, len, fmt, va);
+	if (ret > -1 && ret < len)
+		return ret;
+
+	return -1;
+}
+
+/*int Q_snprintf (char *buff, size_t len, const char *fmt, ...)
+{
+	int ret;
+
+	va_list argptr;
+
+	va_start (argptr, fmt);
+	ret = Q_vsnprintf (buff, len, fmt, argptr);
+	va_end (argptr);
+
+	return ret;
+}*/
+
+void Q_strlwr (char *str)
+{
+	while (*str)
+	{
+		if (isupper(*str))
+			*str = tolower(*str);
+		str++;
+	}
+}
+#endif
+
+/*
+  Copyright (C) 1996, 1997, 1998, 1999, 2000 Florian Schintke
+ 
+  This is free software; you can redistribute it and/or modify it under
+  the terms of the GNU General Public License as published by the Free 
+  Software Foundation; either version 2, or (at your option) any later 
+  version. 
+ 
+  This is distributed in the hope that it will be useful, but WITHOUT 
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License 
+  for more details. 
+ 
+  You should have received a copy of the GNU General Public License with 
+  the c2html, java2html, pas2html or perl2html source package as the 
+  file COPYING. If not, write to the Free Software Foundation, Inc., 
+  59 Temple Place - Suite 330, Boston, MA 
+  02111-1307, USA. 
+*/
+
+/* Documenttitle and purpose:                                       */
+/*   Implementation of the UN*X wildcards in C. So they are         */
+/*   available in a portable way and can be used whereever          */
+/*   needed.                                                        */
+/*                                                                  */
+/* Version:                                                         */
+/*   1.2                                                            */
+/*                                                                  */
+/* Test cases:                                                      */
+/*   Please look into the Shellscript testwildcards.main            */
+/*                                                                  */
+/* Author(s):                                                       */
+/*   Florian Schintke (schintke@gmx.de)                             */
+/*                                                                  */
+/* Tester:                                                          */
+/*   Florian Schintke (schintke@gmx.de)                             */
+/*                                                                  */
+/* Testing state:                                                   */
+/*   tested with the atac tool                                      */
+/*   Latest test state is documented in testwildcards.report        */
+/*   The program that tested this functions is available as         */
+/*   testwildcards.c                                                */
+/*                                                                  */
+/* Dates:                                                           */
+/*   First editing: unknown, but before 04/02/1997                  */
+/*   Last Change  : 04/07/2000                                      */
+/*                                                                  */
+/* Known Bugs:                                                      */
+/*                                                                  */
+
+int set (char **wildcard, char **test);
+/* Scans a set of characters and returns 0 if the set mismatches at this */
+/* position in the teststring and 1 if it is matching                    */
+/* wildcard is set to the closing ] and test is unmodified if mismatched */
+/* and otherwise the char pointer is pointing to the next character      */
+
+int asterisk (char **wildcard, char **test);
+/* scans an asterisk */
+
+int wildcardfit (char *wildcard, char *test)
+{
+  int fit = 1;
+  
+  for (; ('\000' != *wildcard) && (1 == fit) && ('\000' != *test); wildcard++)
+    {
+      switch (*wildcard)
+        {
+        case '[':
+	  wildcard++; /* leave out the opening square bracket */ 
+          fit = set (&wildcard, &test);
+	  /* we don't need to decrement the wildcard as in case */
+	  /* of asterisk because the closing ] is still there */
+          break;
+        case '?':
+          test++;
+          break;
+        case '*':
+          fit = asterisk (&wildcard, &test);
+	  /* the asterisk was skipped by asterisk() but the loop will */
+	  /* increment by itself. So we have to decrement */
+	  wildcard--;
+          break;
+        default:
+          fit = (int) (*wildcard == *test);
+          test++;
+        }
+    }
+  while ((*wildcard == '*') && (1 == fit)) 
+    /* here the teststring is empty otherwise you cannot */
+    /* leave the previous loop */ 
+    wildcard++;
+  return (int) ((1 == fit) && ('\0' == *test) && ('\0' == *wildcard));
+}
+
+int set (char **wildcard, char **test)
+{
+  int fit = 0;
+  int negation = 0;
+  int at_beginning = 1;
+
+  if ('!' == **wildcard)
+    {
+      negation = 1;
+      (*wildcard)++;
+    }
+  while ((']' != **wildcard) || (1 == at_beginning))
+    {
+      if (0 == fit)
+        {
+          if (('-' == **wildcard) 
+              && ((*(*wildcard - 1)) < (*(*wildcard + 1)))
+              && (']' != *(*wildcard + 1))
+	      && (0 == at_beginning))
+            {
+              if (((**test) >= (*(*wildcard - 1)))
+                  && ((**test) <= (*(*wildcard + 1))))
+                {
+                  fit = 1;
+                  (*wildcard)++;
+                }
+            }
+          else if ((**wildcard) == (**test))
+            {
+              fit = 1;
+            }
+        }
+      (*wildcard)++;
+      at_beginning = 0;
+    }
+  if (1 == negation)
+    /* change from zero to one and vice versa */
+    fit = 1 - fit;
+  if (1 == fit) 
+    (*test)++;
+
+  return (fit);
+}
+
+int asterisk (char **wildcard, char **test)
+{
+  /* Warning: uses multiple returns */
+  int fit = 1;
+
+  /* erase the leading asterisk */
+  (*wildcard)++; 
+  while (('\000' != (**test))
+	 && (('?' == **wildcard) 
+	     || ('*' == **wildcard)))
+    {
+      if ('?' == **wildcard) 
+	(*test)++;
+      (*wildcard)++;
+    }
+  /* Now it could be that test is empty and wildcard contains */
+  /* aterisks. Then we delete them to get a proper state */
+  while ('*' == (**wildcard))
+    (*wildcard)++;
+
+  if (('\0' == (**test)) && ('\0' != (**wildcard)))
+    return (fit = 0);
+  if (('\0' == (**test)) && ('\0' == (**wildcard)))
+    return (fit = 1); 
+  else
+    {
+      /* Neither test nor wildcard are empty!          */
+      /* the first character of wildcard isn't in [*?] */
+      if (0 == wildcardfit(*wildcard, (*test)))
+	{
+	  do 
+	    {
+	      (*test)++;
+	      /* skip as much characters as possible in the teststring */
+	      /* stop if a character match occurs */
+	      while (((**wildcard) != (**test)) 
+		     && ('['  != (**wildcard))
+		     && ('\0' != (**test)))
+		(*test)++;
+	    }
+	  while ((('\0' != **test))? 
+		 (0 == wildcardfit (*wildcard, (*test))) 
+		 : (0 != (fit = 0)));
+	}
+      if (('\0' == **test) && ('\0' == **wildcard))
+	fit = 1;
+      return (fit);
+    }
+}

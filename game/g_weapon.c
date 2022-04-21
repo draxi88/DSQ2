@@ -114,7 +114,7 @@ qboolean fire_hit (edict_t *self, vec3_t aim, int damage, int kick)
 		return false;
 
 	// do our special form of knockback here
-	VectorMA (self->enemy->absmin, 0.5, self->enemy->size, v);
+	VectorMA (self->enemy->absmin, 0.5f, self->enemy->size, v);
 	VectorSubtract (v, point, v);
 	VectorNormalize (v);
 	VectorMA (self->enemy->velocity, kick, v, self->enemy->velocity);
@@ -255,7 +255,7 @@ static void fire_lead (edict_t *self, vec3_t start, vec3_t aimdir, int damage, i
 			tr = gi.trace (pos, NULL, NULL, water_start, tr.ent, MASK_WATER);
 
 		VectorAdd (water_start, tr.endpos, pos);
-		VectorScale (pos, 0.5, pos);
+		VectorScale (pos, 0.5f, pos);
 
 		gi.WriteByte (svc_temp_entity);
 		gi.WriteByte (TE_BUBBLETRAIL);
@@ -342,7 +342,7 @@ void blaster_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *
 	G_FreeEdict (self);
 }
 
-void fire_blaster (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, int effect, qboolean hyper)
+void fire_blaster (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, int effect, qboolean hyperb)
 {
 	edict_t	*bolt;
 	trace_t	tr;
@@ -374,7 +374,7 @@ void fire_blaster (edict_t *self, vec3_t start, vec3_t dir, int damage, int spee
 	bolt->think = G_FreeEdict;
 	bolt->dmg = damage;
 	bolt->classname = "bolt";
-	if (hyper)
+	if (hyperb)
 		bolt->spawnflags = 1;
 	gi.linkentity (bolt);
 
@@ -387,7 +387,7 @@ void fire_blaster (edict_t *self, vec3_t start, vec3_t dir, int damage, int spee
 		VectorMA (bolt->s.origin, -10, dir, bolt->s.origin);
 		bolt->touch (bolt, tr.ent, NULL, NULL);
 	}
-}
+}	
 
 
 /*
@@ -411,9 +411,9 @@ static void Grenade_Explode (edict_t *ent)
 		vec3_t	dir;
 
 		VectorAdd (ent->enemy->mins, ent->enemy->maxs, v);
-		VectorMA (ent->enemy->s.origin, 0.5, v, v);
+		VectorMA (ent->enemy->s.origin, 0.5f, v, v);
 		VectorSubtract (ent->s.origin, v, v);
-		points = ent->dmg - 0.5 * VectorLength (v);
+		points = ent->dmg - 0.5f * VectorLength (v);
 		VectorSubtract (ent->enemy->s.origin, ent->s.origin, dir);
 		if (ent->spawnflags & 1)
 			mod = MOD_HANDGRENADE;
@@ -428,7 +428,7 @@ static void Grenade_Explode (edict_t *ent)
 		mod = MOD_HG_SPLASH;
 	else
 		mod = MOD_G_SPLASH;
-	T_RadiusDamage(ent, ent->owner, ent->dmg, ent->enemy, ent->dmg_radius, mod);
+	T_RadiusDamage(ent, ent->owner, (float)ent->dmg, ent->enemy, ent->dmg_radius, mod);
 
 	VectorMA (ent->s.origin, -0.02, ent->velocity, origin);
 	gi.WriteByte (svc_temp_entity);
@@ -452,58 +452,59 @@ static void Grenade_Explode (edict_t *ent)
 	G_FreeEdict (ent);
 }
 
-static void Grenade_Touch(edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
+static void Grenade_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
 {
 	if (other == ent->owner)
 		return;
 
 	if (surf && (surf->flags & SURF_SKY))
 	{
-		G_FreeEdict(ent);
+		G_FreeEdict (ent);
 		return;
 	}
+
 	if (!other->takedamage)
 	{
 		if (ent->spawnflags & 1)
 		{
 			if (random() > 0.5)
-				gi.sound(ent, CHAN_VOICE, gi.soundindex("weapons/hgrenb1a.wav"), 1, ATTN_NORM, 0);
+				gi.sound (ent, CHAN_VOICE, gi.soundindex ("weapons/hgrenb1a.wav"), 1, ATTN_NORM, 0);
 			else
-				gi.sound(ent, CHAN_VOICE, gi.soundindex("weapons/hgrenb2a.wav"), 1, ATTN_NORM, 0);
+				gi.sound (ent, CHAN_VOICE, gi.soundindex ("weapons/hgrenb2a.wav"), 1, ATTN_NORM, 0);
 		}
 		else
 		{
-			gi.sound(ent, CHAN_VOICE, gi.soundindex("weapons/grenlb1b.wav"), 1, ATTN_NORM, 0);
+			gi.sound (ent, CHAN_VOICE, gi.soundindex ("weapons/grenlb1b.wav"), 1, ATTN_NORM, 0);
 		}
 		return;
 	}
 
 	ent->enemy = other;
-	Grenade_Explode(ent);
+	Grenade_Explode (ent);
 }
 
-void fire_grenade(edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, float timer, float damage_radius)
+void fire_grenade (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, float timer, float damage_radius)
 {
 	edict_t	*grenade;
 	vec3_t	dir;
 	vec3_t	forward, right, up;
 
-	vectoangles(aimdir, dir);
-	AngleVectors(dir, forward, right, up);
+	vectoangles (aimdir, dir);
+	AngleVectors (dir, forward, right, up);
 
 	grenade = G_Spawn();
-	VectorCopy(start, grenade->s.origin);
-	VectorScale(aimdir, speed, grenade->velocity);
-	VectorMA(grenade->velocity, 200 + crandom() * 10.0, up, grenade->velocity);
-	VectorMA(grenade->velocity, crandom() * 10.0, right, grenade->velocity);
-	VectorSet(grenade->avelocity, 300, 300, 300);
+	VectorCopy (start, grenade->s.origin);
+	VectorScale (aimdir, speed, grenade->velocity);
+	VectorMA (grenade->velocity, 200 + crandom() * 10.0, up, grenade->velocity);
+	VectorMA (grenade->velocity, crandom() * 10.0, right, grenade->velocity);
+	VectorSet (grenade->avelocity, 300, 300, 300);
 	grenade->movetype = MOVETYPE_BOUNCE;
 	grenade->clipmask = MASK_SHOT;
 	grenade->solid = SOLID_BBOX;
 	grenade->s.effects |= EF_GRENADE;
-	VectorClear(grenade->mins);
-	VectorClear(grenade->maxs);
-	grenade->s.modelindex = gi.modelindex("models/objects/grenade/tris.md2");
+	VectorClear (grenade->mins);
+	VectorClear (grenade->maxs);
+	grenade->s.modelindex = gi.modelindex ("models/objects/grenade/tris.md2");
 	grenade->owner = self;
 	grenade->touch = Grenade_Touch;
 	grenade->nextthink = level.time + timer;
@@ -512,31 +513,31 @@ void fire_grenade(edict_t *self, vec3_t start, vec3_t aimdir, int damage, int sp
 	grenade->dmg_radius = damage_radius;
 	grenade->classname = "grenade";
 
-	gi.linkentity(grenade);
+	gi.linkentity (grenade);
 }
 
-void fire_grenade2(edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, float timer, float damage_radius, qboolean held)
+void fire_grenade2 (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, float timer, float damage_radius, qboolean held)
 {
 	edict_t	*grenade;
 	vec3_t	dir;
 	vec3_t	forward, right, up;
 
-	vectoangles(aimdir, dir);
-	AngleVectors(dir, forward, right, up);
+	vectoangles (aimdir, dir);
+	AngleVectors (dir, forward, right, up);
 
 	grenade = G_Spawn();
-	VectorCopy(start, grenade->s.origin);
-	VectorScale(aimdir, speed, grenade->velocity);
-	VectorMA(grenade->velocity, 200 + crandom() * 10.0, up, grenade->velocity);
-	VectorMA(grenade->velocity, crandom() * 10.0, right, grenade->velocity);
-	VectorSet(grenade->avelocity, 300, 300, 300);
+	VectorCopy (start, grenade->s.origin);
+	VectorScale (aimdir, speed, grenade->velocity);
+	VectorMA (grenade->velocity, 200 + crandom() * 10.0, up, grenade->velocity);
+	VectorMA (grenade->velocity, crandom() * 10.0, right, grenade->velocity);
+	VectorSet (grenade->avelocity, 300, 300, 300);
 	grenade->movetype = MOVETYPE_BOUNCE;
 	grenade->clipmask = MASK_SHOT;
 	grenade->solid = SOLID_BBOX;
 	grenade->s.effects |= EF_GRENADE;
-	VectorClear(grenade->mins);
-	VectorClear(grenade->maxs);
-	grenade->s.modelindex = gi.modelindex("models/objects/grenade2/tris.md2");
+	VectorClear (grenade->mins);
+	VectorClear (grenade->maxs);
+	grenade->s.modelindex = gi.modelindex ("models/objects/grenade2/tris.md2");
 	grenade->owner = self;
 	grenade->touch = Grenade_Touch;
 	grenade->nextthink = level.time + timer;
@@ -551,13 +552,14 @@ void fire_grenade2(edict_t *self, vec3_t start, vec3_t aimdir, int damage, int s
 	grenade->s.sound = gi.soundindex("weapons/hgrenc1b.wav");
 
 	if (timer <= 0.0)
-		Grenade_Explode(grenade);
+		Grenade_Explode (grenade);
 	else
 	{
-		gi.sound(self, CHAN_WEAPON, gi.soundindex("weapons/hgrent1a.wav"), 1, ATTN_NORM, 0);
-		gi.linkentity(grenade);
+		gi.sound (self, CHAN_WEAPON, gi.soundindex ("weapons/hgrent1a.wav"), 1, ATTN_NORM, 0);
+		gi.linkentity (grenade);
 	}
 }
+
 
 /*
 =================
@@ -602,7 +604,7 @@ void rocket_touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *su
 		}
 	}
 
-	T_RadiusDamage(ent, ent->owner, ent->radius_dmg, other, ent->dmg_radius, MOD_R_SPLASH);
+	T_RadiusDamage(ent, ent->owner, (float)ent->radius_dmg, other, ent->dmg_radius, MOD_R_SPLASH);
 
 	gi.WriteByte (svc_temp_entity);
 	if (ent->waterlevel)
@@ -678,9 +680,7 @@ void fire_rail (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick
 		}
 		else
 		{
-			//ZOID--added so rail goes through SOLID_BBOX entities (gibs, etc)
-			if ((tr.ent->svflags & SVF_MONSTER) || (tr.ent->client) ||
-				(tr.ent->solid == SOLID_BBOX))
+			if ((tr.ent->svflags & SVF_MONSTER) || (tr.ent->client))
 				ignore = tr.ent;
 			else
 				ignore = NULL;
@@ -741,12 +741,12 @@ void bfg_explode (edict_t *self)
 				continue;
 
 			VectorAdd (ent->mins, ent->maxs, v);
-			VectorMA (ent->s.origin, 0.5, v, v);
+			VectorMA (ent->s.origin, 0.5f, v, v);
 			VectorSubtract (self->s.origin, v, v);
 			dist = VectorLength(v);
-			points = self->radius_dmg * (1.0 - sqrt(dist/self->dmg_radius));
+			points = self->radius_dmg * (1.0f - (float)sqrt(dist/self->dmg_radius));
 			if (ent == self->owner)
-				points = points * 0.5;
+				points = points * 0.5f;
 
 			gi.WriteByte (svc_temp_entity);
 			gi.WriteByte (TE_BFG_EXPLOSION);
@@ -832,7 +832,7 @@ void bfg_think (edict_t *self)
 		if (!(ent->svflags & SVF_MONSTER) && (!ent->client) && (strcmp(ent->classname, "misc_explobox") != 0))
 			continue;
 
-		VectorMA (ent->absmin, 0.5, ent->size, point);
+		VectorMA (ent->absmin, 0.5f, ent->size, point);
 
 		VectorSubtract (point, self->s.origin, dir);
 		VectorNormalize (dir);

@@ -539,7 +539,7 @@ GRENADE
 ======================================================================
 */
 
-#define GRENADE_TIMER		3.0
+#define GRENADE_TIMER		3.0f
 #define GRENADE_MINSPEED	400
 #define GRENADE_MAXSPEED	800
 
@@ -548,33 +548,29 @@ void weapon_grenade_fire (edict_t *ent, qboolean held)
 	vec3_t	offset;
 	vec3_t	forward, right;
 	vec3_t	start;
-	int		damage = DMG_GRENADE;
+	int		damage = 125;
 	float	timer;
 	int		speed;
 	float	radius;
 
-	//DSQ2
-	gitem_t *it;
-	if (it = FindItemByClassname("ammo_grenades")) {
-		damage += GrenadeLevel * it->level;
-	}
+	damage = DMG_GRENADE;
 
-	radius = damage+40;
+	radius = (float)(damage+40);
 	if (is_quad)
 		damage *= 4;
 
-	VectorSet(offset, 8, 8, ent->viewheight-8);
+	VectorSet(offset, 8, 8, (vec_t)(ent->viewheight-8));
 	AngleVectors (ent->client->v_angle, forward, right, NULL);
 	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
 
 	timer = ent->client->grenade_time - level.time;
-	speed = GRENADE_MINSPEED + (GRENADE_TIMER - timer) * ((GRENADE_MAXSPEED - GRENADE_MINSPEED) / GRENADE_TIMER);
+	speed = (int)(GRENADE_MINSPEED + (GRENADE_TIMER - timer) * ((GRENADE_MAXSPEED - GRENADE_MINSPEED) / GRENADE_TIMER));
 	fire_grenade2 (ent, start, forward, damage, speed, timer, radius, held);
 
 	if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
 		ent->client->pers.inventory[ent->client->ammo_index]--;
 
-	ent->client->grenade_time = level.time + 1.0;
+	ent->client->grenade_time = level.time + 1.0f;
 
 	if(ent->deadflag || ent->s.modelindex != 255) // VWep animations screw up corpses
 	{
@@ -656,7 +652,7 @@ void Weapon_Grenade (edict_t *ent)
 		{
 			if (!ent->client->grenade_time)
 			{
-				ent->client->grenade_time = level.time + GRENADE_TIMER + 0.2;
+				ent->client->grenade_time = level.time + GRENADE_TIMER + 0.2f;
 				ent->client->weapon_sound = gi.soundindex("weapons/hgrenc1b.wav");
 			}
 
@@ -717,27 +713,23 @@ void weapon_grenadelauncher_fire (edict_t *ent)
 	vec3_t	offset;
 	vec3_t	forward, right;
 	vec3_t	start;
-	int		damage = DMG_GRENADE;
+	int		damage = 120;
 	float	radius;
 
-	//DSQ2
-	gitem_t *it;
-	if (it = FindItemByClassname("ammo_grenades")) {
-		damage += GrenadeLevel * it->level;
-	}
+	damage = DMG_GLAUNCHER;
 
-	radius = damage+40;
+	radius = (float)(damage+40);
 	if (is_quad)
 		damage *= 4;
 
-	VectorSet(offset, 8, 8, ent->viewheight-8);
+	VectorSet(offset, 8, 8, (vec_t)(ent->viewheight-8));
 	AngleVectors (ent->client->v_angle, forward, right, NULL);
 	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
 
 	VectorScale (forward, -2, ent->client->kick_origin);
 	ent->client->kick_angles[0] = -1;
 
-	fire_grenade (ent, start, forward, damage, 600, 2.5, radius, false);
+	fire_grenade (ent, start, forward, damage, 600, 2.5, radius);
 
 	gi.WriteByte (svc_muzzleflash);
 	gi.WriteShort (ent-g_edicts);
@@ -776,15 +768,8 @@ void Weapon_RocketLauncher_Fire (edict_t *ent)
 	float	damage_radius;
 	int		radius_damage;
 
-	damage = DMG_ROCKET + (int)(random() * 20.0);
-
-	//DSQ2
-	gitem_t *it;
-	if (it = FindItemByClassname("weapon_rocketlauncher")) {
-		damage += RocketLevel * it->level;
-	}
-
-	radius_damage = damage+20;
+	damage = 100 + (int)(random() * 20.0);
+	radius_damage = 120;
 	damage_radius = 120;
 	if (is_quad)
 	{
@@ -797,7 +782,7 @@ void Weapon_RocketLauncher_Fire (edict_t *ent)
 	VectorScale (forward, -2, ent->client->kick_origin);
 	ent->client->kick_angles[0] = -1;
 
-	VectorSet(offset, 8, 8, ent->viewheight-8);
+	VectorSet(offset, 8, 8, (vec_t)(ent->viewheight-8));
 	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
 	fire_rocket (ent, start, forward, damage, 650, damage_radius, radius_damage);
 
@@ -832,7 +817,7 @@ BLASTER / HYPERBLASTER
 ======================================================================
 */
 
-void Blaster_Fire (edict_t *ent, vec3_t g_offset, int damage, qboolean hyper, int effect)
+void Blaster_Fire (edict_t *ent, vec3_t g_offset, int damage, qboolean hyperb, int effect)
 {
 	vec3_t	forward, right;
 	vec3_t	start;
@@ -841,18 +826,19 @@ void Blaster_Fire (edict_t *ent, vec3_t g_offset, int damage, qboolean hyper, in
 	if (is_quad)
 		damage *= 4;
 	AngleVectors (ent->client->v_angle, forward, right, NULL);
-	VectorSet(offset, 24, 8, ent->viewheight-8);
+	VectorSet(offset, 24, 8, (vec_t)(ent->viewheight-8));
 	VectorAdd (offset, g_offset, offset);
 	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
 
 	VectorScale (forward, -2, ent->client->kick_origin);
 	ent->client->kick_angles[0] = -1;
-	fire_blaster (ent, start, forward, damage, 1000, effect, hyper);
+
+	fire_blaster (ent, start, forward, damage, 1000, effect, hyperb);
 
 	// send muzzle flash
 	gi.WriteByte (svc_muzzleflash);
 	gi.WriteShort (ent-g_edicts);
-	if (hyper)
+	if (hyperb)
 		gi.WriteByte (MZ_HYPERBLASTER | is_silenced);
 	else
 		gi.WriteByte (MZ_BLASTER | is_silenced);
@@ -866,25 +852,17 @@ void Weapon_Blaster_Fire (edict_t *ent)
 {
 	int		damage;
 
-	if (deathmatch->value)
-		damage = DMG_BLASTER;
-	else
-		damage = DMG_BLASTER;
-
-	//DSQ2
-	gitem_t *it;
-	if (it = FindItemByClassname("weapon_blaster")) {
-		damage += BlasterLevel * it->level;
-	}
+	damage = DMG_BLASTER;
 
 	Blaster_Fire (ent, vec3_origin, damage, false, EF_BLASTER);
 	ent->client->ps.gunframe++;
 }
 
-void Weapon_Blaster(edict_t *ent)
+void Weapon_Blaster (edict_t *ent)
 {
-	static int	pause_frames[] = { 19, 32, 0 };
-	static int	fire_frames[] = { 5, 0 };
+	static int	pause_frames[]	= {19, 32, 0};
+	static int	fire_frames[]	= {5, 0};
+
 	Weapon_Generic (ent, 4, 8, 52, 55, pause_frames, fire_frames, Weapon_Blaster_Fire);
 }
 
@@ -916,25 +894,15 @@ void Weapon_HyperBlaster_Fire (edict_t *ent)
 		else
 		{
 			rotation = (ent->client->ps.gunframe - 5) * 2*M_PI/6;
-			offset[0] = -4 * sin(rotation);
+			offset[0] = -4 * (vec_t)sin(rotation);
 			offset[1] = 0;
-			offset[2] = 4 * cos(rotation);
+			offset[2] = 4 * (vec_t)cos(rotation);
 
 			if ((ent->client->ps.gunframe == 6) || (ent->client->ps.gunframe == 9))
 				effect = EF_HYPERBLASTER;
 			else
 				effect = 0;
-			if (deathmatch->value)
-				damage = DMG_HYPERBLASTER;
-			else
-				damage = DMG_HYPERBLASTER;
-
-			//DSQ2
-			gitem_t *it;
-			if (it = FindItemByClassname("weapon_hyperblaster")) {
-				damage += HyperblasterLevel * it->level;
-			}
-
+			damage = DMG_HYPERBLASTER;
 			Blaster_Fire (ent, offset, damage, true, effect);
 			if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
 				ent->client->pers.inventory[ent->client->ammo_index]--;
@@ -987,13 +955,11 @@ void Machinegun_Fire (edict_t *ent)
 	vec3_t		start;
 	vec3_t		forward, right;
 	vec3_t		angles;
-	int			damage = DMG_BULLET;
+	int			damage = 8;
 	int			kick = 2;
 	vec3_t		offset;
-	gitem_t *it;
-	if (it = FindItemByClassname("weapon_machinegun")) {
-		damage += MachinegunLevel * it->level;
-	}
+
+	damage = DMG_MACHINEGUN;
 
 	if (!(ent->client->buttons & BUTTON_ATTACK))
 	{
@@ -1027,11 +993,11 @@ void Machinegun_Fire (edict_t *ent)
 
 	for (i=1 ; i<3 ; i++)
 	{
-		ent->client->kick_origin[i] = crandom() * 0.35;
-		ent->client->kick_angles[i] = crandom() * 0.7;
+		ent->client->kick_origin[i] = crandom() * 0.35f;
+		ent->client->kick_angles[i] = crandom() * 0.7f;
 	}
-	ent->client->kick_origin[0] = crandom() * 0.35;
-	ent->client->kick_angles[0] = ent->client->machinegun_shots * -1.5;
+	ent->client->kick_origin[0] = crandom() * 0.35f;
+	ent->client->kick_angles[0] = ent->client->machinegun_shots * -1.5f;
 
 	// raise the gun as it is firing
 	if (!deathmatch->value)
@@ -1044,7 +1010,7 @@ void Machinegun_Fire (edict_t *ent)
 	// get start / end positions
 	VectorAdd (ent->client->v_angle, ent->client->kick_angles, angles);
 	AngleVectors (angles, forward, right, NULL);
-	VectorSet(offset, 0, 8, ent->viewheight-8);
+	VectorSet(offset, 0, 8, (vec_t)(ent->viewheight-8));
 	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
 	fire_bullet (ent, start, forward, damage, kick, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, MOD_MACHINEGUN);
 
@@ -1090,14 +1056,7 @@ void Chaingun_Fire (edict_t *ent)
 	int			damage;
 	int			kick = 2;
 
-	if (deathmatch->value)
-		damage = DMG_BULLET;
-	else
-		damage = DMG_BULLET;
-	gitem_t *it;
-	if (it = FindItemByClassname("weapon_chaingun")) {
-		damage += ChaingunLevel * it->level;
-	}
+	damage = DMG_CHAINGUN;
 
 	if (ent->client->ps.gunframe == 5)
 		gi.sound(ent, CHAN_AUTO, gi.soundindex("weapons/chngnu1a.wav"), 1, ATTN_IDLE, 0);
@@ -1174,8 +1133,8 @@ void Chaingun_Fire (edict_t *ent)
 
 	for (i=0 ; i<3 ; i++)
 	{
-		ent->client->kick_origin[i] = crandom() * 0.35;
-		ent->client->kick_angles[i] = crandom() * 0.7;
+		ent->client->kick_origin[i] = crandom() * 0.35f;
+		ent->client->kick_angles[i] = crandom() * 0.7f;
 	}
 
 	for (i=0 ; i<shots ; i++)
@@ -1225,14 +1184,10 @@ void weapon_shotgun_fire (edict_t *ent)
 	vec3_t		start;
 	vec3_t		forward, right;
 	vec3_t		offset;
-	int			damage = DMG_SHOTGUN;
+	int			damage = 4;
 	int			kick = 8;
 
-	//DSQ2
-	gitem_t *it;
-	if (it = FindItemByClassname("weapon_shotgun")) {
-		damage += ShotgunLevel * it->level;
-	}
+	damage = DMG_SHOTGUN;
 
 	if (ent->client->ps.gunframe == 9)
 	{
@@ -1245,7 +1200,7 @@ void weapon_shotgun_fire (edict_t *ent)
 	VectorScale (forward, -2, ent->client->kick_origin);
 	ent->client->kick_angles[0] = -2;
 
-	VectorSet(offset, 0, 8,  ent->viewheight-8);
+	VectorSet(offset, 0, 8, (vec_t)(ent->viewheight-8));
 	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
 
 	if (is_quad)
@@ -1287,18 +1242,16 @@ void weapon_supershotgun_fire (edict_t *ent)
 	vec3_t		forward, right;
 	vec3_t		offset;
 	vec3_t		v;
-	int			damage = DMG_SSHOTGUN;
+	int			damage = 6;
 	int			kick = 12;
-	gitem_t *it;
-	if (it = FindItemByClassname("weapon_supershotgun")) {
-		damage += SupershotgunLevel * it->level;
-	}
+
+	damage = DMG_SSHOTGUN;
 	AngleVectors (ent->client->v_angle, forward, right, NULL);
 
 	VectorScale (forward, -2, ent->client->kick_origin);
 	ent->client->kick_angles[0] = -2;
 
-	VectorSet(offset, 0, 8,  ent->viewheight-8);
+	VectorSet(offset, 0, 8, (vec_t)(ent->viewheight-8));
 	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
 
 	if (is_quad)
@@ -1355,21 +1308,8 @@ void weapon_railgun_fire (edict_t *ent)
 	int			damage;
 	int			kick;
 
-	if (deathmatch->value)
-	{	// normal damage is too extreme in dm
-		damage = DMG_RAILGUN;
-		kick = 200;
-	}
-	else
-	{
-		damage = DMG_RAILGUN;
-		kick = 250;
-	}
-
-	gitem_t *it;
-	if (it = FindItemByClassname("weapon_railgun")) {
-		damage += RailgunLevel * it->level;
-	}
+	damage = DMG_RAILGUN;
+	kick = 250;
 
 	if (is_quad)
 	{
@@ -1382,7 +1322,7 @@ void weapon_railgun_fire (edict_t *ent)
 	VectorScale (forward, -3, ent->client->kick_origin);
 	ent->client->kick_angles[0] = -3;
 
-	VectorSet(offset, 0, 7,  ent->viewheight-8);
+	VectorSet(offset, 0, 7, (vec_t)(ent->viewheight-8));
 	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
 	fire_rail (ent, start, forward, damage, kick);
 
@@ -1408,6 +1348,7 @@ void Weapon_Railgun (edict_t *ent)
 	Weapon_Generic (ent, 3, 18, 56, 61, pause_frames, fire_frames, weapon_railgun_fire);
 }
 
+
 /*
 ======================================================================
 
@@ -1423,15 +1364,7 @@ void weapon_bfg_fire (edict_t *ent)
 	int		damage;
 	float	damage_radius = 1000;
 
-	if (deathmatch->value)
-		damage = DMG_BFG;
-	else
-		damage = DMG_BFG;
-
-	gitem_t *it;
-	if (it = FindItemByClassname("weapon_bfg")) {
-		damage += BFGLevel * it->level;
-	}
+	damage = DMG_BFG;
 
 	if (ent->client->ps.gunframe == 9)
 	{
@@ -1443,7 +1376,7 @@ void weapon_bfg_fire (edict_t *ent)
 
 		ent->client->ps.gunframe++;
 
-		PlayerNoise(ent, start, PNOISE_WEAPON);
+		PlayerNoise(ent, ent->s.origin, PNOISE_WEAPON);
 		return;
 	}
 
@@ -1467,7 +1400,7 @@ void weapon_bfg_fire (edict_t *ent)
 	ent->client->v_dmg_roll = crandom()*8;
 	ent->client->v_dmg_time = level.time + DAMAGE_TIME;
 
-	VectorSet(offset, 8, 8, ent->viewheight-8);
+	VectorSet(offset, 8, 8, (vec_t)(ent->viewheight-8));
 	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
 	fire_bfg (ent, start, forward, damage, 400, damage_radius);
 

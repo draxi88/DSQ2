@@ -94,10 +94,10 @@ void SP_target_speaker (edict_t *ent)
 	ent->noise_index = gi.soundindex (buffer);
 
 	if (!ent->volume)
-		ent->volume = 1.0;
+		ent->volume = 1.0f;
 
 	if (!ent->attenuation)
-		ent->attenuation = 1.0;
+		ent->attenuation = 1.0f;
 	else if (ent->attenuation == -1)	// use -1 so 0 defaults to 1
 		ent->attenuation = 0;
 
@@ -233,7 +233,7 @@ void target_explosion_explode (edict_t *self)
 	gi.WritePosition (self->s.origin);
 	gi.multicast (self->s.origin, MULTICAST_PHS);
 
-	T_RadiusDamage (self, self->activator, self->dmg, NULL, self->dmg+40, MOD_EXPLOSIVE);
+	T_RadiusDamage (self, self->activator, (float)self->dmg, NULL, (float)(self->dmg+40), MOD_EXPLOSIVE);
 
 	save = self->delay;
 	self->delay = 0;
@@ -346,7 +346,7 @@ void use_target_splash (edict_t *self, edict_t *other, edict_t *activator)
 	gi.multicast (self->s.origin, MULTICAST_PVS);
 
 	if (self->dmg)
-		T_RadiusDamage (self, activator, self->dmg, NULL, self->dmg+40, MOD_SPLASH);
+		T_RadiusDamage (self, activator, (float)self->dmg, NULL, (float)(self->dmg+40), MOD_SPLASH);
 }
 
 void SP_target_splash (edict_t *self)
@@ -424,7 +424,7 @@ void use_target_blaster (edict_t *self, edict_t *other, edict_t *activator)
 	else
 		effect = EF_BLASTER;
 
-	fire_blaster (self, self->s.origin, self->movedir, self->dmg, self->speed, EF_BLASTER, MOD_TARGET_BLASTER);
+	fire_blaster (self, self->s.origin, self->movedir, self->dmg, (int)self->speed, EF_BLASTER, MOD_TARGET_BLASTER);
 	gi.sound (self, CHAN_VOICE, self->noise_index, 1, ATTN_NORM, 0);
 }
 
@@ -510,7 +510,7 @@ void target_laser_think (edict_t *self)
 	if (self->enemy)
 	{
 		VectorCopy (self->movedir, last_movedir);
-		VectorMA (self->enemy->absmin, 0.5, self->enemy->size, point);
+		VectorMA (self->enemy->absmin, 0.5f, self->enemy->size, point);
 		VectorSubtract (point, self->s.origin, self->movedir);
 		VectorNormalize (self->movedir);
 		if (!VectorCompare(self->movedir, last_movedir))
@@ -657,7 +657,7 @@ void target_lightramp_think (edict_t *self)
 {
 	char	style[2];
 
-	style[0] = 'a' + self->movedir[0] + (level.time - self->timestamp) / FRAMETIME * self->movedir[2];
+	style[0] = (char)('a' + self->movedir[0] + (level.time - self->timestamp) / FRAMETIME * self->movedir[2]);
 	style[1] = 0;
 	gi.configstring (CS_LIGHTS+self->enemy->style, style);
 
@@ -669,7 +669,7 @@ void target_lightramp_think (edict_t *self)
 	{
 		char	temp;
 
-		temp = self->movedir[0];
+		temp = (char)self->movedir[0];
 		self->movedir[0] = self->movedir[1];
 		self->movedir[1] = temp;
 		self->movedir[2] *= -1;
@@ -738,8 +738,8 @@ void SP_target_lightramp (edict_t *self)
 	self->use = target_lightramp_use;
 	self->think = target_lightramp_think;
 
-	self->movedir[0] = self->message[0] - 'a';
-	self->movedir[1] = self->message[1] - 'a';
+	self->movedir[0] = (vec_t)(self->message[0] - 'a');
+	self->movedir[1] = (vec_t)(self->message[1] - 'a');
 	self->movedir[2] = (self->movedir[1] - self->movedir[0]) / (self->speed / FRAMETIME);
 }
 
@@ -759,8 +759,8 @@ void target_earthquake_think (edict_t *self)
 
 	if (self->last_move_time < level.time)
 	{
-		gi.positioned_sound (self->s.origin, self, CHAN_AUTO, self->noise_index, 1.0, ATTN_NONE, 0);
-		self->last_move_time = level.time + 0.5;
+		gi.positioned_sound (self->s.origin, self, CHAN_AUTO, self->noise_index, 1.0f, ATTN_NONE, 0);
+		self->last_move_time = level.time + 0.5f;
 	}
 
 	for (i=1, e=g_edicts+i; i < globals.num_edicts; i++,e++)
@@ -775,7 +775,7 @@ void target_earthquake_think (edict_t *self)
 		e->groundentity = NULL;
 		e->velocity[0] += crandom()* 150;
 		e->velocity[1] += crandom()* 150;
-		e->velocity[2] = self->speed * (100.0 / e->mass);
+		e->velocity[2] = self->speed * (100.0f / e->mass);
 	}
 
 	if (level.time < self->timestamp)

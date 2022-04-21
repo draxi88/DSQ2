@@ -36,13 +36,13 @@ void Weapon_GrenadeLauncher (edict_t *ent);
 void Weapon_Railgun (edict_t *ent);
 void Weapon_BFG (edict_t *ent);
 
-gitem_armor_t jacketarmor_info	= { 25,  50, .30, .00, ARMOR_JACKET};
-gitem_armor_t combatarmor_info	= { 50, 100, .60, .30, ARMOR_COMBAT};
-gitem_armor_t bodyarmor_info	= {100, 200, .80, .60, ARMOR_BODY};
+gitem_armor_t jacketarmor_info	= { 25,  50, .30f, .00f, ARMOR_JACKET};
+gitem_armor_t combatarmor_info	= { 50, 100, .60f, .30f, ARMOR_COMBAT};
+gitem_armor_t bodyarmor_info	= {100, 200, .80f, .60f, ARMOR_BODY};
 
-static int	jacket_armor_index;
-static int	combat_armor_index;
-static int	body_armor_index;
+int	jacket_armor_index;
+int	combat_armor_index;
+int	body_armor_index;
 static int	power_screen_index;
 static int	power_shield_index;
 
@@ -172,11 +172,11 @@ qboolean Pickup_Powerup (edict_t *ent, edict_t *other)
 	if (deathmatch->value)
 	{
 		if (!(ent->spawnflags & DROPPED_ITEM) )
-			SetRespawn (ent, ent->item->quantity);
+			SetRespawn (ent, (float)ent->item->quantity);
 		if (((int)dmflags->value & DF_INSTANT_ITEMS) || ((ent->item->use == Use_Quad) && (ent->spawnflags & DROPPED_PLAYER_ITEM)))
 		{
 			if ((ent->item->use == Use_Quad) && (ent->spawnflags & DROPPED_PLAYER_ITEM))
-				quad_drop_timeout_hack = (ent->nextthink - level.time) / FRAMETIME;
+				quad_drop_timeout_hack = (int)((ent->nextthink - level.time) / FRAMETIME);
 			ent->item->use (other, ent->item);
 		}
 	}
@@ -194,7 +194,7 @@ void Drop_General (edict_t *ent, gitem_t *item)
 
 //======================================================================
 
-qboolean Pickup_Adrenaline (edict_t *ent, edict_t *other)
+qboolean Pickup_Adrenaline(edict_t *ent, edict_t *other)
 {
 	/*if (!deathmatch->value)
 		other->max_health += 1;
@@ -206,18 +206,18 @@ qboolean Pickup_Adrenaline (edict_t *ent, edict_t *other)
 	other->client->pers.souls += 1000; //DSQ2
 
 	if (!(ent->spawnflags & DROPPED_ITEM) && (deathmatch->value))
-		SetRespawn (ent, ent->item->quantity);
+		SetRespawn(ent, ent->item->quantity);
 
 	return true;
 }
 
-qboolean Pickup_AncientHead (edict_t *ent, edict_t *other)
+qboolean Pickup_AncientHead(edict_t *ent, edict_t *other)
 {
 	//other->max_health += 2;
 	other->client->pers.souls += 2000; //DSQ2
 
 	if (!(ent->spawnflags & DROPPED_ITEM) && (deathmatch->value))
-		SetRespawn (ent, ent->item->quantity);
+		SetRespawn(ent, ent->item->quantity);
 
 	return true;
 }
@@ -255,7 +255,7 @@ qboolean Pickup_Bandolier (edict_t *ent, edict_t *other)
 	}
 
 	if (!(ent->spawnflags & DROPPED_ITEM) && (deathmatch->value))
-		SetRespawn (ent, ent->item->quantity);
+		SetRespawn (ent, (float)ent->item->quantity);
 
 	return true;
 }
@@ -333,7 +333,7 @@ qboolean Pickup_Pack (edict_t *ent, edict_t *other)
 	}
 
 	if (!(ent->spawnflags & DROPPED_ITEM) && (deathmatch->value))
-		SetRespawn (ent, ent->item->quantity);
+		SetRespawn (ent, (float)ent->item->quantity);
 
 	return true;
 }
@@ -360,7 +360,7 @@ void Use_Quad (edict_t *ent, gitem_t *item)
 	if (ent->client->quad_framenum > level.framenum)
 		ent->client->quad_framenum += timeout;
 	else
-		ent->client->quad_framenum = level.framenum + timeout;
+		ent->client->quad_framenum = (float)(level.framenum + timeout);
 
 	gi.sound(ent, CHAN_ITEM, gi.soundindex("items/damage.wav"), 1, ATTN_NORM, 0);
 }
@@ -375,7 +375,7 @@ void Use_Breather (edict_t *ent, gitem_t *item)
 	if (ent->client->breather_framenum > level.framenum)
 		ent->client->breather_framenum += 300;
 	else
-		ent->client->breather_framenum = level.framenum + 300;
+		ent->client->breather_framenum = (float)(level.framenum + 300);
 
 //	gi.sound(ent, CHAN_ITEM, gi.soundindex("items/damage.wav"), 1, ATTN_NORM, 0);
 }
@@ -390,7 +390,7 @@ void Use_Envirosuit (edict_t *ent, gitem_t *item)
 	if (ent->client->enviro_framenum > level.framenum)
 		ent->client->enviro_framenum += 300;
 	else
-		ent->client->enviro_framenum = level.framenum + 300;
+		ent->client->enviro_framenum = (float)(level.framenum + 300);
 
 //	gi.sound(ent, CHAN_ITEM, gi.soundindex("items/damage.wav"), 1, ATTN_NORM, 0);
 }
@@ -405,7 +405,7 @@ void	Use_Invulnerability (edict_t *ent, gitem_t *item)
 	if (ent->client->invincible_framenum > level.framenum)
 		ent->client->invincible_framenum += 300;
 	else
-		ent->client->invincible_framenum = level.framenum + 300;
+		ent->client->invincible_framenum = (float)(level.framenum + 300);
 
 	gi.sound(ent, CHAN_ITEM, gi.soundindex("items/protect.wav"), 1, ATTN_NORM, 0);
 }
@@ -501,6 +501,7 @@ qboolean Pickup_Ammo (edict_t *ent, edict_t *other)
 		count = ent->item->quantity;
 
 	ent->item->dropcount = 0;
+
 	oldcount = other->client->pers.inventory[ITEM_INDEX(ent->item)];
 
 	if (!Add_Ammo (other, ent->item, count))
@@ -663,7 +664,7 @@ qboolean Pickup_Armor (edict_t *ent, edict_t *other)
 		{
 			// calc new armor values
 			salvage = oldinfo->normal_protection / newinfo->normal_protection;
-			salvagecount = salvage * other->client->pers.inventory[old_armor_index];
+			salvagecount = (int)(salvage * other->client->pers.inventory[old_armor_index]);
 			newcount = newinfo->base_count + salvagecount;
 			if (newcount > newinfo->max_count)
 				newcount = newinfo->max_count;
@@ -678,7 +679,7 @@ qboolean Pickup_Armor (edict_t *ent, edict_t *other)
 		{
 			// calc new armor values
 			salvage = newinfo->normal_protection / oldinfo->normal_protection;
-			salvagecount = salvage * newinfo->base_count;
+			salvagecount = (int)(salvage * newinfo->base_count);
 			newcount = other->client->pers.inventory[old_armor_index] + salvagecount;
 			if (newcount > oldinfo->max_count)
 				newcount = oldinfo->max_count;
@@ -750,7 +751,7 @@ qboolean Pickup_PowerArmor (edict_t *ent, edict_t *other)
 	if (deathmatch->value)
 	{
 		if (!(ent->spawnflags & DROPPED_ITEM) )
-			SetRespawn (ent, ent->item->quantity);
+			SetRespawn (ent, (float)ent->item->quantity);
 		// auto-use for DM only if we didn't already have one
 		if (!quantity)
 			ent->item->use (other, ent->item);
@@ -789,10 +790,10 @@ void Touch_Item (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf
 	if (taken)
 	{
 		// flash the screen
-		other->client->bonus_alpha = 0.25;
+		other->client->bonus_alpha = 0.25;	
 
 		//DSQ2
-		if (strcmp(ent->classname, "strogg_soul") == 0 || strcmp(ent->classname, "player_soul") == 0){
+		if (strcmp(ent->classname, "strogg_soul") == 0 || strcmp(ent->classname, "player_soul") == 0) {
 			other->client->pers.souls += ent->item->count_width;
 			gi.sound(other, CHAN_ITEM, gi.soundindex(ent->item->pickup_sound), 1, ATTN_NORM, 0);
 			G_FreeEdict(ent);
@@ -803,13 +804,13 @@ void Touch_Item (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf
 		}
 
 		// show icon and name on status bar
-		other->client->ps.stats[STAT_PICKUP_ICON] = gi.imageindex(ent->item->icon);
-		other->client->ps.stats[STAT_PICKUP_STRING] = CS_ITEMS+ITEM_INDEX(ent->item);
-		other->client->pickup_msg_time = level.time + 3.0;
+		other->client->ps.stats[STAT_PICKUP_ICON] = (int16)gi.imageindex(ent->item->icon);
+		other->client->ps.stats[STAT_PICKUP_STRING] = (int16)(CS_ITEMS+ITEM_INDEX(ent->item));
+		other->client->pickup_msg_time = level.time + 3.0f;
 
 		// change selected item
 		if (ent->item->use)
-			other->client->pers.selected_item = other->client->ps.stats[STAT_SELECTED_ITEM] = ITEM_INDEX(ent->item);
+			other->client->pers.selected_item = other->client->ps.stats[STAT_SELECTED_ITEM] = (int16)ITEM_INDEX(ent->item);
 
 		if (ent->item->pickup == Pickup_Health)
 		{
@@ -1095,11 +1096,6 @@ void SpawnItem (edict_t *ent, gitem_t *item)
 			ent->spawnflags = 0;
 			gi.dprintf("%s at %s has invalid spawnflags set\n", ent->classname, vtos(ent->s.origin));
 		}
-	}
-	if (item->pickup == Pickup_Health)
-	{
-		G_FreeEdict(ent);
-		return;
 	}
 
 	// some items will be prevented in deathmatch
@@ -1829,7 +1825,7 @@ Special item that gives +2 to maximum health
 		0,
 		NULL,
 		0,
-/* precache */ ""
+		/* precache */ ""
 	},
 
 /*QUAKED item_adrenaline (.3 .3 1) (-16 -16 -16) (16 16 16)
@@ -1853,7 +1849,7 @@ gives +1 to maximum health
 		0,
 		NULL,
 		0,
-/* precache */ ""
+		/* precache */ ""
 	},
 
 /*QUAKED item_bandolier (.3 .3 1) (-16 -16 -16) (16 16 16)
@@ -1902,7 +1898,7 @@ gives +1 to maximum health
 /* precache */ ""
 	},
 
-	//w
+	//
 	// KEYS
 	//
 /*QUAKED key_data_cd (0 .5 .8) (-16 -16 -16) (16 16 16)
@@ -2148,9 +2144,9 @@ tank commander's head
 		NULL,
 		NULL,
 		"items/pkup.wav",
-		"models/objects/gibs/skull/tris.md2", EF_ROTATE|EF_QUAD|EF_DOUBLE,
+		"models/objects/gibs/skull/tris.md2", EF_ROTATE | EF_QUAD | EF_DOUBLE,
 		NULL,
-/*icon*/"",
+		/*icon*/"",
 		"Strogg Soul",
 		2,
 		0,
@@ -2199,7 +2195,7 @@ tank commander's head
 		0,
 		NULL,
 		0,
-/* precache */ ""
+		/* precache */ ""
 	},
 
 	// end of list marker
