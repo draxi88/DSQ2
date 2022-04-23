@@ -105,8 +105,7 @@ The normal starting point for a level.
 */
 void SP_info_player_start(edict_t *self)
 {
-	SP_misc_teleporter_dest(self);
-	M_droptofloor(self);
+	SP_Bonfire(self);
 	if (!coop->value)
 		return;
 	if(Q_stricmp(level.mapname, "security") == 0)
@@ -744,7 +743,7 @@ void SaveClientData (void)
 
 void FetchClientEntData (edict_t *ent)
 {
-	ent->health = ent->client->pers.health;
+	ent->health = ent->client->pers.max_health;
 	ent->max_health = ent->client->pers.max_health;
 	//DSQ2
 	ent->client->resp.health_flask = ent->client->pers.max_flasks;
@@ -1662,7 +1661,6 @@ void StuffRun(edict_t *ent) {
 	gi.WriteByte(svc_stufftext);
 	gi.WriteString("set cl_run 0 u\n");
 	gi.unicast(ent, true);
-	gi.dprintf("stuffed\n");
 }
 
 /*
@@ -1689,7 +1687,7 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 	//DSQ2
 	VectorCopy(ent->velocity, temp);
 	temp[2] = 0;
-	if (VectorNormalize(temp) > 300) { //speed
+	if (VectorNormalize(temp) > 280) { //speed
 		client->pers.stamina -= 0.01;
 		if (client->pers.stamina <= 0)
 			VectorScale(ent->velocity, 0.9, ent->velocity);

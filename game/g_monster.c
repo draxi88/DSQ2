@@ -601,6 +601,7 @@ qboolean monster_start (edict_t *self)
 	self->takedamage = DAMAGE_AIM;
 	self->air_finished = level.time + 12;
 	self->use = monster_use;
+
 	self->max_health = self->health;
 	self->clipmask = MASK_MONSTERSOLID;
 

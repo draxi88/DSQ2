@@ -343,7 +343,11 @@ void MainMenuOpen(edict_t *ent)
 	if (ent->client->menu)
 		selected = ent->client->menu->cur;
 	else
-		selected = -1;
+		selected = 2;
+	if (ent->client->pers.last_bonfire == NULL) {
+		gi.dprintf("Something's wrong! Bonfire not set/found.\n");
+		return;
+	}
 	int distance = VectorDistance(ent->client->pers.last_bonfire->s.origin, ent->s.origin);
 	if (distance > 70) {
 		gi.cprintf(ent, PRINT_HIGH, "Not at a bonfire!\n");

@@ -35,16 +35,16 @@ void DrinkHealth(edict_t *ent) {
 
 void UpdateHealth(edict_t *ent) {
 	char msg[128] = "";
-	if (ent->client->pers.souls >= xplevel[ent->client->pers.health_level] && ent->client->pers.health_level < 99) {
+	if (ent->client->pers.souls >= xplevel[ent->client->pers.health_level]*2 && ent->client->pers.health_level < 99) {
 		//upgrade
 		ent->client->pers.max_health += HEALTH_PLAYER_LEVEL;
-		ent->client->pers.souls -= xplevel[ent->client->pers.health_level];
+		ent->client->pers.souls -= xplevel[ent->client->pers.health_level]*2;
 		ent->client->pers.health_level++;
 	}
 	else {
 		sprintf(msg + strlen(msg), "Could not upgrade health.");
 		if (ent->client->pers.health_level < 99)
-			sprintf(msg + strlen(msg), "Not enough stroggpoints (%i more needed).", xplevel[ent->client->pers.health_level] - ent->client->pers.souls);
+			sprintf(msg + strlen(msg), "Not enough stroggpoints (%i more needed).", xplevel[ent->client->pers.health_level]*2 - ent->client->pers.souls);
 		else
 			sprintf(msg + strlen(msg), "Health is maxed!");
 		gi.cprintf(ent, PRINT_HIGH, "%s\n", msg);
@@ -56,16 +56,16 @@ void UpdateHealth(edict_t *ent) {
 
 void UpdateStamina(edict_t *ent) {
 	char msg[128] = "";
-	if (ent->client->pers.souls >= xplevel[ent->client->pers.stamina_level] && ent->client->pers.stamina_level < 99) {
+	if (ent->client->pers.souls >= xplevel[ent->client->pers.stamina_level]*2 && ent->client->pers.stamina_level < 99) {
 		//upgrade
 		ent->client->pers.max_stamina += STAMINA_PLAYER_LEVEL;
-		ent->client->pers.souls -= xplevel[ent->client->pers.stamina_level];
+		ent->client->pers.souls -= xplevel[ent->client->pers.stamina_level]*2;
 		ent->client->pers.stamina_level++;
 	}
 	else {
 		sprintf(msg + strlen(msg), "Could not upgrade stamina.");
 		if (ent->client->pers.stamina_level < 99)
-			sprintf(msg + strlen(msg), "Not enough stroggpoints (%i more needed).", xplevel[ent->client->pers.stamina_level] - ent->client->pers.souls);
+			sprintf(msg + strlen(msg), "Not enough stroggpoints (%i more needed).", xplevel[ent->client->pers.stamina_level]*2 - ent->client->pers.souls);
 		else
 			sprintf(msg + strlen(msg), "Stamina is maxed!");
 		gi.cprintf(ent, PRINT_HIGH, "%s\n", msg);
@@ -162,6 +162,7 @@ void GetEntities() {
 		all_entities[entCount].spawnflags = ent->spawnflags;
 		all_entities[entCount].targetname = ent->targetname;
 		all_entities[entCount].target = ent->target;
+		all_entities[entCount].deathtarget = ent->deathtarget;
 #ifdef DEBUG
 		gi.dprintf("%-24s - sf: %i", monster->classname, monster->spawnflags);
 		if (monster->target)
@@ -185,6 +186,7 @@ void spawner(int i) {
 	newEnt->spawnflags = all_entities[i].spawnflags;
 	newEnt->targetname = all_entities[i].targetname;
 	newEnt->target = all_entities[i].target;
+	newEnt->deathtarget = all_entities[i].deathtarget;
 	ED_CallSpawn(newEnt);
 	//gi.dprintf("name: %s - spawnflag: %i - target: %s  - targetname: %s\n", newEnt->classname, newEnt->spawnflags, newEnt->target, newEnt->targetname);
 	gi.linkentity(newEnt);
@@ -226,7 +228,7 @@ void RemoveSouls(edict_t *ent) {
 void FindBonfire(edict_t *ent) {
 	vec3_t bonfire;
 	VectorCopy(ent->client->pers.last_bonfire->s.origin, bonfire);
-	bonfire[2] += 10;
+	bonfire[2] += 15;
 	for (int i = 0; i < 3; i++)
 	{
 		ent->client->ps.pmove.delta_angles[i] = ANGLE2SHORT(ent->client->pers.last_bonfire->s.angles[i] - ent->client->resp.cmd_angles[i]);
