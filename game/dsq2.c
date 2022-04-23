@@ -35,16 +35,16 @@ void DrinkHealth(edict_t *ent) {
 
 void UpdateHealth(edict_t *ent) {
 	char msg[128] = "";
-	if (ent->client->pers.souls >= xplevel[ent->client->pers.health_level] && ent->client->pers.health_level < 99) {
+	if (ent->client->pers.souls >= xplevel[ent->client->pers.health_level]*2 && ent->client->pers.health_level < 99) {
 		//upgrade
 		ent->client->pers.max_health += HEALTH_PLAYER_LEVEL;
-		ent->client->pers.souls -= xplevel[ent->client->pers.health_level];
+		ent->client->pers.souls -= xplevel[ent->client->pers.health_level]*2;
 		ent->client->pers.health_level++;
 	}
 	else {
 		sprintf(msg + strlen(msg), "Could not upgrade health.");
 		if (ent->client->pers.health_level < 99)
-			sprintf(msg + strlen(msg), "Not enough stroggpoints (%i more needed).", xplevel[ent->client->pers.health_level] - ent->client->pers.souls);
+			sprintf(msg + strlen(msg), "Not enough stroggpoints (%i more needed).", xplevel[ent->client->pers.health_level]*2 - ent->client->pers.souls);
 		else
 			sprintf(msg + strlen(msg), "Health is maxed!");
 		gi.cprintf(ent, PRINT_HIGH, "%s\n", msg);
@@ -56,16 +56,16 @@ void UpdateHealth(edict_t *ent) {
 
 void UpdateStamina(edict_t *ent) {
 	char msg[128] = "";
-	if (ent->client->pers.souls >= xplevel[ent->client->pers.stamina_level] && ent->client->pers.stamina_level < 99) {
+	if (ent->client->pers.souls >= xplevel[ent->client->pers.stamina_level]*2 && ent->client->pers.stamina_level < 99) {
 		//upgrade
 		ent->client->pers.max_stamina += STAMINA_PLAYER_LEVEL;
-		ent->client->pers.souls -= xplevel[ent->client->pers.stamina_level];
+		ent->client->pers.souls -= xplevel[ent->client->pers.stamina_level]*2;
 		ent->client->pers.stamina_level++;
 	}
 	else {
 		sprintf(msg + strlen(msg), "Could not upgrade stamina.");
 		if (ent->client->pers.stamina_level < 99)
-			sprintf(msg + strlen(msg), "Not enough stroggpoints (%i more needed).", xplevel[ent->client->pers.stamina_level] - ent->client->pers.souls);
+			sprintf(msg + strlen(msg), "Not enough stroggpoints (%i more needed).", xplevel[ent->client->pers.stamina_level]*2 - ent->client->pers.souls);
 		else
 			sprintf(msg + strlen(msg), "Stamina is maxed!");
 		gi.cprintf(ent, PRINT_HIGH, "%s\n", msg);

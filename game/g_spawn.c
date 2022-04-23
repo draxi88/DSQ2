@@ -659,7 +659,7 @@ char *single_statusbar =
 // stamina
 "if 20 "
 	"xv -100 "
-	"num 2 21 "
+	"num 2 20 "
 "endif "
 
 // health flask

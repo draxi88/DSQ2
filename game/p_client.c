@@ -1661,7 +1661,6 @@ void StuffRun(edict_t *ent) {
 	gi.WriteByte(svc_stufftext);
 	gi.WriteString("set cl_run 0 u\n");
 	gi.unicast(ent, true);
-	gi.dprintf("stuffed\n");
 }
 
 /*
@@ -1688,7 +1687,7 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 	//DSQ2
 	VectorCopy(ent->velocity, temp);
 	temp[2] = 0;
-	if (VectorNormalize(temp) > 300) { //speed
+	if (VectorNormalize(temp) > 280) { //speed
 		client->pers.stamina -= 0.01;
 		if (client->pers.stamina <= 0)
 			VectorScale(ent->velocity, 0.9, ent->velocity);

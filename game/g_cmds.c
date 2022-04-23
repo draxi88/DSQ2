@@ -1039,12 +1039,14 @@ void ClientCommand (edict_t *ent)
 	else if (Q_stricmp(cmd, "drink_health") == 0) {
 		DrinkHealth(ent);
 	}
+#ifdef CHEATS
 	else if (Q_stricmp(cmd, "getsouls") == 0) {
 		if (atoi(gi.argv(1)) > 0)
 			ent->client->pers.souls += atoi(gi.argv(1));
 		else
 			ent->client->pers.souls += 1000;
 	}
+#endif
 	else	// anything that doesn't match a command will be a chat
 		Cmd_Say_f (ent, false, true);
 }

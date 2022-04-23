@@ -96,7 +96,7 @@
       <Optimization>MaxSpeed</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>CHEATS;WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>build/temp/game/release\</AssemblerListingLocation>
       <PrecompiledHeaderOutputFile>build/temp/game/release\game.pch</PrecompiledHeaderOutputFile>
       <ObjectFileName>build/temp/game/release\</ObjectFileName>
