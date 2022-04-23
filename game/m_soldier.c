@@ -1253,6 +1253,7 @@ void SP_monster_soldier_light (edict_t *self)
 
 	self->s.skinnum = 0;
 	self->health = HEALTH_M_SOLDIER_LIGHT;
+	self->max_health = HEALTH_M_SOLDIER_LIGHT;
 	self->gib_health = -30;
 }
 
@@ -1274,6 +1275,7 @@ void SP_monster_soldier (edict_t *self)
 
 	self->s.skinnum = 2;
 	self->health = HEALTH_M_SOLDIER;
+	self->max_health = HEALTH_M_SOLDIER;
 	self->gib_health = -30;
 }
 
@@ -1295,5 +1297,6 @@ void SP_monster_soldier_ss (edict_t *self)
 
 	self->s.skinnum = 4;
 	self->health = HEALTH_M_SOLDIER_SS;
+	self->max_health = HEALTH_M_SOLDIER_SS;
 	self->gib_health = -30;
 }

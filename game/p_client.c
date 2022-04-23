@@ -105,8 +105,7 @@ The normal starting point for a level.
 */
 void SP_info_player_start(edict_t *self)
 {
-	SP_misc_teleporter_dest(self);
-	M_droptofloor(self);
+	SP_Bonfire(self);
 	if (!coop->value)
 		return;
 	if(Q_stricmp(level.mapname, "security") == 0)
@@ -744,7 +743,7 @@ void SaveClientData (void)
 
 void FetchClientEntData (edict_t *ent)
 {
-	ent->health = ent->client->pers.health;
+	ent->health = ent->client->pers.max_health;
 	ent->max_health = ent->client->pers.max_health;
 	//DSQ2
 	ent->client->resp.health_flask = ent->client->pers.max_flasks;

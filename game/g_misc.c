@@ -1860,21 +1860,11 @@ void SP_misc_teleporter (edict_t *ent)
 	
 }
 
-
-void bonfire_touch(edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf) {
-	if (!other->client)
-		return;
-
-	other->client->pers.last_bonfire = self;
-}
 /*QUAKED misc_teleporter_dest (1 0 0) (-32 -32 -24) (32 32 -16)
 Point teleporters at these.
 */
 void SP_misc_teleporter_dest(edict_t *ent)
 {
-	if (strcmp(ent->classname, "info_player_start") == 0) { //DSQ2
-		ent->touch = bonfire_touch;
-	}
 	gi.setmodel(ent, "models/objects/dmspot/tris.md2");
 	ent->s.skinnum = 0;
 	ent->solid = SOLID_BBOX;
@@ -1882,5 +1872,31 @@ void SP_misc_teleporter_dest(edict_t *ent)
 	VectorSet(ent->mins, -32, -32, -24);
 	VectorSet(ent->maxs, 32, 32, -16);
 	gi.linkentity(ent);
+}
+
+
+void bonfire_touch(edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf) {
+	if (!other->client)
+		return;
+	other->client->pers.last_bonfire = self;
+}
+/*QUAKED misc_teleporter_dest (1 0 0) (-32 -32 -24) (32 32 -16)
+Point teleporters at these.
+*/
+void SP_Bonfire(edict_t *ent)
+{
+	edict_t *bonfire;
+
+	gi.linkentity(ent);
+
+	bonfire = G_Spawn();
+	bonfire->solid = SOLID_TRIGGER;
+	_VectorCopy(ent->s.origin, bonfire->s.origin);
+	_VectorCopy(ent->s.angles, bonfire->s.angles);
+	bonfire->s.origin[2] -= 20;
+	bonfire->touch = bonfire_touch;
+	gi.setmodel(bonfire, "models/items/c_head/tris.md2");
+	bonfire->s.effects = EF_COLOR_SHELL | EF_DOUBLE;
+	gi.linkentity(bonfire);
 }
 

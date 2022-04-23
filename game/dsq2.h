@@ -17,9 +17,9 @@
 int xplevel[99];
 
 //STATS PLAYER
-#define HEALTH_PLAYER_LEVEL 20
+#define HEALTH_PLAYER_LEVEL 10
 #define HEALTH_PLAYER_START 100
-#define STAMINA_PLAYER_LEVEL 5
+#define STAMINA_PLAYER_LEVEL 2
 #define STAMINA_PLAYER_START 5
 
 //HEALTH MONSTERS
@@ -84,6 +84,7 @@ int xplevel[99];
 		char		classname[32];
 		char		*targetname;
 		char		*target;
+		char		*deathtarget;
 	} entity_s;
 
 	entity_s all_entities[MAX_EDICTS];
@@ -108,7 +109,7 @@ void GetEntities();
 void DeleteItems(edict_t *ent);
 
 //spawn
-void SP_misc_teleporter_dest(edict_t *self);
+void SP_Bonfire(edict_t *self);
 void ED_CallSpawn(edict_t *ent);
 void FindBonfire(edict_t *ent);
 void DS_Respawn(edict_t *ent);
