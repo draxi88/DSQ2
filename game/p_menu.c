@@ -408,7 +408,7 @@ void WeaponMenuOpen(edict_t *ent, pmenuhnd_t *p)
 		weaponmenu[i].SelectFunc = UpgradeWeapon;
 		i++;
 	}
-	index = ITEM_INDEX(FindItemByClassname("weapon_supershotgun"));
+	index = ITEM_INDEX(FindItemByClassname("weapon_chaingun"));
 	if (ent->client->pers.inventory[index]) {
 		it = &itemlist[index];
 		DMG_CHAINGUN = START_CHAINGUN + (ChaingunLevel * ent->client->pers.levels[ITEM_INDEX(it)]);
