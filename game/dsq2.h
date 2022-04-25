@@ -1,5 +1,5 @@
 //DSq2
-#define DS_VERSION "Beta v0.4"
+#define DS_VERSION "Beta v0.5"
 
 //Weapons
 #define BlasterLevel		2
