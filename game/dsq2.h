@@ -91,6 +91,7 @@ int xplevel[99];
 #endif // !ITEM_SET
 
 char *HighAscii(char *str);
+int clamp(int i, int min, int max);
 
 //menu stuff
 void MainMenuOpen(edict_t *ent);

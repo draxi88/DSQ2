@@ -970,6 +970,7 @@ void ClientEndServerFrame (edict_t *ent)
 {
 	float	bobtime;
 	int		i;
+	int		armorSave;
 
 	current_player = ent;
 	current_client = ent->client;
@@ -1104,8 +1105,10 @@ void ClientEndServerFrame (edict_t *ent)
 	}
 
 	//Armor control
-	//gi.dprintf("damage: %i -> protection:%f -> armorsave: %i\n", ent->sumDamage, ent->client->pers.normalArmor, (int)ceil(ent->client->pers.normalArmor*ent->sumDamage));
-	ent->sumDamage -= (int)ceil(ent->client->pers.normalArmor*ent->sumDamage);
+	armorSave = (int)ceil(ent->client->pers.normalArmor*ent->sumDamage);
+	armorSave = clamp(armorSave, 0, ent->client->pers.maxProtection);
+	//gi.dprintf("damage: %i, armorsave: %i, clamped: %i,  maxProtection: %i\n", ent->sumDamage, (int)ceil(ent->client->pers.normalArmor*ent->sumDamage), armorSave, ent->client->pers.maxProtection);
+	ent->sumDamage -= armorSave;
 	ent->health -= ent->sumDamage;
 	ent->sumDamage = 0;
 	if (ent->health <= 0)

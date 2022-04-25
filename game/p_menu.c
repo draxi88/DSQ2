@@ -424,6 +424,7 @@ void UseArmor(edict_t *ent, pmenuhnd_t *p) {
 	it = &itemlist[p->index];
 	gi.cprintf(ent, PRINT_HIGH, "%s equipped.\n", it->pickup_name);
 	ent->client->pers.normalArmor = ((gitem_armor_t *)it->info)->normal_protection;
+	ent->client->pers.maxProtection = ((gitem_armor_t *)it->info)->base_count;
 	ArmorSelected(ent, p);
 }
 
@@ -434,12 +435,18 @@ void TakeOffArmor(edict_t *ent, pmenuhnd_t *p) {
 	gi.cprintf(ent, PRINT_HIGH, "%s not equipped.\n", it->pickup_name);
 	ent->client->pers.armor_index = 0;
 	ent->client->pers.normalArmor = 0;
+	ent->client->pers.maxProtection = 0;
 	ArmorSelected(ent, p);
 }
 
 void ArmorSelected(edict_t *ent, pmenuhnd_t *p)
 {
 	gitem_t *it;
+	gitem_armor_t *armor;
+	char absorb[26];
+	char abAscii[12];
+	char protect[26];
+	char protAscii[12];
 	int selected;
 	if (ent->client->menu)
 		selected = ent->client->menu->cur;
@@ -451,21 +458,29 @@ void ArmorSelected(edict_t *ent, pmenuhnd_t *p)
 	}
 	if (ent->client->pers.inventory[p->index]) {
 		it = &itemlist[p->index];
+		armor = it->info;
 		sprintf(it->menuname, "%-18s lvl:%i", it->pickup_name, ent->client->pers.levels[p->index]);
 		itemmenu[2].text = it->menuname;
-		itemmenu[2].SelectFunc = NULL;
-		itemmenu[4].index = p->index;
+		sprintf(abAscii, "%i", armor->base_count);
+		sprintf(absorb, "Absorption: %s", HighAscii(abAscii));
+		itemmenu[3].text = absorb;
+		sprintf(protAscii, "%0.3f", armor->normal_protection);
+		sprintf(protect, "Protection: %s", HighAscii(protAscii));
+		itemmenu[4].text = protect;
+		 
+		itemmenu[6].index = p->index;
+
 		if (ent->client->pers.armor_index == p->index) {
-			itemmenu[4].text = "Take off";
-			itemmenu[4].SelectFunc = TakeOffArmor;
+			itemmenu[6].text = "Take off";
+			itemmenu[6].SelectFunc = TakeOffArmor;
 		}
 		else {
-			itemmenu[4].text = "Equip";
-			itemmenu[4].SelectFunc = UseArmor;
+			itemmenu[6].text = "Equip";
+			itemmenu[6].SelectFunc = UseArmor;
 		}
-		itemmenu[5].text = "Upgrade";
-		itemmenu[5].index = p->index;
-		itemmenu[5].SelectFunc = UpgradeArmor;
+		itemmenu[7].text = "Upgrade";
+		itemmenu[7].index = p->index;
+		itemmenu[7].SelectFunc = UpgradeArmor;
 	}
 
 	PMenu_Close(ent);
@@ -474,10 +489,12 @@ void ArmorSelected(edict_t *ent, pmenuhnd_t *p)
 
 void UpgradeArmor(edict_t *ent, pmenuhnd_t *hnd) {
 	gitem_t *it;
+	gitem_armor_t *armor;
 	int index = hnd->index;
 	if (ent->client->pers.inventory[index]) {
 		it = &itemlist[index];
-		if (((gitem_armor_t *)it->info)->normal_protection > 0.9f) {
+		armor = it->info;
+		if (armor->base_count >= armor->max_count) {
 			gi.cprintf(ent, PRINT_HIGH, "Could not upgrade %s. Max protection reached.\n", it->pickup_name);
 			return;
 		}
@@ -486,8 +503,13 @@ void UpgradeArmor(edict_t *ent, pmenuhnd_t *hnd) {
 			ent->client->pers.souls -= xplevel[ent->client->pers.levels[ITEM_INDEX(it)]];
 			ent->client->pers.levels[ITEM_INDEX(it)]++;
 			gi.cprintf(ent, PRINT_HIGH, "%s updated.\n", it->pickup_name);
-			((gitem_armor_t *)it->info)->normal_protection += 0.025f;
-			ent->client->pers.normalArmor = ((gitem_armor_t *)it->info)->normal_protection;
+			armor->normal_protection += 0.025f;
+			if (armor->normal_protection > 1.0f)
+				armor->normal_protection = 1.0f;
+			armor->base_count += 1;
+			ent->client->pers.normalArmor = armor->normal_protection;
+			ent->client->pers.maxProtection = armor->base_count;
+			gi.dprintf("%f & %i\n", ent->client->pers.normalArmor, ent->client->pers.maxProtection);
 		}
 		else {
 			gi.cprintf(ent, PRINT_HIGH, "Could not upgrade %s. Not enough soulpoints\n", it->pickup_name);

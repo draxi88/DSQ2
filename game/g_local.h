@@ -904,6 +904,7 @@ typedef struct
 	int run;
 
 	float normalArmor;
+	int	maxProtection;
 	int armor_index;
 	int	levels[256];
 } client_persistant_t;

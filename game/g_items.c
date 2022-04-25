@@ -36,9 +36,9 @@ void Weapon_GrenadeLauncher (edict_t *ent);
 void Weapon_Railgun (edict_t *ent);
 void Weapon_BFG (edict_t *ent);
 
-gitem_armor_t jacketarmor_info	= { 25,  50, .20f, .10f, ARMOR_JACKET};
-gitem_armor_t combatarmor_info	= { 50, 100, .40f, .20f, ARMOR_COMBAT};
-gitem_armor_t bodyarmor_info	= {100, 200, .60f, .30f, ARMOR_BODY};
+gitem_armor_t jacketarmor_info	= {  1,  50, .20f, .10f, ARMOR_JACKET};
+gitem_armor_t combatarmor_info	= { 10, 100, .40f, .20f, ARMOR_COMBAT};
+gitem_armor_t bodyarmor_info	= { 20, 200, .60f, .30f, ARMOR_BODY};
 
 int	jacket_armor_index;
 int	combat_armor_index;
@@ -623,6 +623,7 @@ qboolean Pickup_Armor (edict_t *ent, edict_t *other)
 	other->client->pers.inventory[ITEM_INDEX(ent->item)] += 1;
 	other->client->pers.levels[ITEM_INDEX(ent->item)] = 1;
 	return;
+
 	// get info on new armor
 	newinfo = (gitem_armor_t *)ent->item->info;
 
