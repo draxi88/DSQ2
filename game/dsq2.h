@@ -1,18 +1,18 @@
 //DSq2
-#define DS_VERSION "Beta v0.4"
+#define DS_VERSION "Beta v0.5"
 
 //Weapons
 #define BlasterLevel		2
-#define ShotgunLevel		2
-#define SupershotgunLevel	2
+#define ShotgunLevel		1
+#define SupershotgunLevel	1
 #define MachinegunLevel		2
 #define ChaingunLevel		2
-#define GrenadeLevel		5
-#define GLauncherLevel		5
-#define RocketLevel			5
-#define HyperblasterLevel	2
-#define RailgunLevel		5
-#define BFGLevel			10
+#define GrenadeLevel		10
+#define GLauncherLevel		10
+#define RocketLevel			10
+#define HyperblasterLevel	5
+#define RailgunLevel		20
+#define BFGLevel			30
 
 int xplevel[99];
 
@@ -100,6 +100,7 @@ void DrinkHealth(edict_t *ent);
 void UpdateHealth(edict_t *ent);
 void UpdateStamina(edict_t *ent);
 void UpgradeWeapon(edict_t *ent, pmenuhnd_t *hnd);
+void UpgradeArmor(edict_t *ent, pmenuhnd_t *hnd);
 
 //Entities
 int entCount;

@@ -887,23 +887,24 @@ typedef struct
 	short dmg_hyperblaster;
 	short dmg_railgun;
 	short dmg_bfg;
+
 	unsigned long souls;
 	short max_flasks;
 	short health_level;
 	qboolean bonfire;
 	edict_t *last_bonfire;
-	int run;
+
 	float stamina;
 	float max_stamina;
 	short stamina_level;
+
 	float startrun;
 	float stoprun;
 	qboolean stuffed;
+	int run;
 
-	qboolean JacketArmor;
-	qboolean CombatArmor;
-	qboolean BodyArmor;
-
+	float normalArmor;
+	int armor_index;
 	int	levels[256];
 } client_persistant_t;
 
@@ -1107,6 +1108,8 @@ struct edict_s
 	int			max_health;
 	int			gib_health;
 	int			deadflag;
+	int			sumDamage;
+	int			armorSave;
 	qboolean	show_hostile;
 
 	float		powerarmor_time;

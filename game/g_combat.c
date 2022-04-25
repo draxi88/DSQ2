@@ -273,7 +273,8 @@ static int CheckArmor (edict_t *ent, vec3_t point, vec3_t normal, int damage, in
 	if (dflags & DAMAGE_NO_ARMOR)
 		return 0;
 
-	index = ArmorIndex (ent);
+	index = ent->client->pers.armor_index;
+	//index = ArmorIndex (ent);
 	if (!index)
 		return 0;
 
@@ -283,13 +284,14 @@ static int CheckArmor (edict_t *ent, vec3_t point, vec3_t normal, int damage, in
 		save = (int)ceil(((gitem_armor_t *)armor->info)->energy_protection*damage);
 	else
 		save = (int)ceil(((gitem_armor_t *)armor->info)->normal_protection*damage);
-	if (save >= client->pers.inventory[index])
-		save = client->pers.inventory[index];
+	
+	/*if (save >= client->pers.inventory[index])
+		save = client->pers.inventory[index];*/
 
 	if (!save)
 		return 0;
 
-	client->pers.inventory[index] -= save;
+	//client->pers.inventory[index] -= save;
 	SpawnDamage (te_sparks, point, normal, save);
 
 	return save;
@@ -477,7 +479,7 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 	take -= psave;
 
 	asave = CheckArmor (targ, point, normal, take, te_sparks, dflags);
-	take -= asave;
+	//take -= asave;
 
 	//treat cheat/powerup savings the same as armor
 	asave += save;
@@ -495,14 +497,18 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 			SpawnDamage (te_sparks, point, normal, take);
 
 
-		targ->health = targ->health - take;
-			
-		if (targ->health <= 0)
-		{
-			if ((targ->svflags & SVF_MONSTER) || (client))
-				targ->flags |= FL_NO_KNOCKBACK;
-			Killed (targ, inflictor, attacker, take, point);
-			return;
+		//targ->health = targ->health - take;
+		targ->sumDamage += take;
+		
+		if (!client) {
+			targ->health = targ->health - take;
+			if (targ->health <= 0)
+			{
+				if ((targ->svflags & SVF_MONSTER) || (client))
+					targ->flags |= FL_NO_KNOCKBACK;
+				Killed(targ, inflictor, attacker, take, point);
+				return;
+			}
 		}
 	}
 
