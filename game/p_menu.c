@@ -349,7 +349,7 @@ void UpdateHealth(edict_t *ent) {
 	else {
 		sprintf(msg + strlen(msg), "Could not upgrade health.");
 		if (ent->client->pers.health_level < 99)
-			sprintf(msg + strlen(msg), "Not enough stroggpoints (%i more needed).", xplevel[ent->client->pers.health_level] * 2 - ent->client->pers.souls);
+			sprintf(msg + strlen(msg), "Not enough soulpoints (%i more needed).", xplevel[ent->client->pers.health_level] * 2 - ent->client->pers.souls);
 		else
 			sprintf(msg + strlen(msg), "Health is maxed!");
 		gi.cprintf(ent, PRINT_HIGH, "%s\n", msg);
@@ -370,7 +370,7 @@ void UpdateStamina(edict_t *ent) {
 	else {
 		sprintf(msg + strlen(msg), "Could not upgrade stamina.");
 		if (ent->client->pers.stamina_level < 99)
-			sprintf(msg + strlen(msg), "Not enough stroggpoints (%i more needed).", xplevel[ent->client->pers.stamina_level] * 2 - ent->client->pers.souls);
+			sprintf(msg + strlen(msg), "Not enough soulpoints (%i more needed).", xplevel[ent->client->pers.stamina_level] * 2 - ent->client->pers.souls);
 		else
 			sprintf(msg + strlen(msg), "Stamina is maxed!");
 		gi.cprintf(ent, PRINT_HIGH, "%s\n", msg);
@@ -490,7 +490,7 @@ void UpgradeArmor(edict_t *ent, pmenuhnd_t *hnd) {
 			ent->client->pers.normalArmor = ((gitem_armor_t *)it->info)->normal_protection;
 		}
 		else {
-			gi.cprintf(ent, PRINT_HIGH, "Could not upgrade %s. Not enough stroggpoints\n", it->pickup_name);
+			gi.cprintf(ent, PRINT_HIGH, "Could not upgrade %s. Not enough soulpoints\n", it->pickup_name);
 			return;
 		}
 	}
@@ -559,7 +559,7 @@ void UpgradeWeapon(edict_t *ent, pmenuhnd_t *hnd) {
 			else {
 				sprintf(msg + strlen(msg), "Could not upgrade %s.", it->pickup_name);
 				if (ent->client->pers.levels[ITEM_INDEX(it)] < 99)
-					sprintf(msg + strlen(msg), "Not enough stroggpoints (%i more needed).", xplevel[ent->client->pers.levels[ITEM_INDEX(it)]] - ent->client->pers.souls);
+					sprintf(msg + strlen(msg), "Not enough soulpoints (%i more needed).", xplevel[ent->client->pers.levels[ITEM_INDEX(it)]] - ent->client->pers.souls);
 				else
 					sprintf(msg + strlen(msg), "Weapon is maxed!");
 				gi.cprintf(ent, PRINT_HIGH, "%s\n", msg);
