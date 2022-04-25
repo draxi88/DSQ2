@@ -685,7 +685,7 @@ char *single_statusbar =
 // armor
 "if 4 "
 	" xv 200 "
-	" rnum "
+	//" rnum "
 	" xv 250 "
 	" pic 4 "
 "endif "

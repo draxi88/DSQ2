@@ -1102,5 +1102,13 @@ void ClientEndServerFrame (edict_t *ent)
 		DeathmatchScoreboardMessage (ent, ent->enemy);
 		gi.unicast (ent, false);
 	}
+
+	//Armor control
+	//gi.dprintf("damage: %i -> protection:%f -> armorsave: %i\n", ent->sumDamage, ent->client->pers.normalArmor, (int)ceil(ent->client->pers.normalArmor*ent->sumDamage));
+	ent->sumDamage -= (int)ceil(ent->client->pers.normalArmor*ent->sumDamage);
+	ent->health -= ent->sumDamage;
+	ent->sumDamage = 0;
+	if (ent->health <= 0)
+		DS_Respawn(ent);
 }
 

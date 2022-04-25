@@ -33,104 +33,6 @@ void DrinkHealth(edict_t *ent) {
 	ent->client->resp.health_flask--;
 }
 
-void UpdateHealth(edict_t *ent) {
-	char msg[128] = "";
-	if (ent->client->pers.souls >= xplevel[ent->client->pers.health_level]*2 && ent->client->pers.health_level < 99) {
-		//upgrade
-		ent->client->pers.max_health += HEALTH_PLAYER_LEVEL;
-		ent->client->pers.souls -= xplevel[ent->client->pers.health_level]*2;
-		ent->client->pers.health_level++;
-	}
-	else {
-		sprintf(msg + strlen(msg), "Could not upgrade health.");
-		if (ent->client->pers.health_level < 99)
-			sprintf(msg + strlen(msg), "Not enough stroggpoints (%i more needed).", xplevel[ent->client->pers.health_level]*2 - ent->client->pers.souls);
-		else
-			sprintf(msg + strlen(msg), "Health is maxed!");
-		gi.cprintf(ent, PRINT_HIGH, "%s\n", msg);
-	}
-	ent->health = ent->client->pers.max_health;
-
-	MainMenuOpen(ent);
-}
-
-void UpdateStamina(edict_t *ent) {
-	char msg[128] = "";
-	if (ent->client->pers.souls >= xplevel[ent->client->pers.stamina_level]*2 && ent->client->pers.stamina_level < 99) {
-		//upgrade
-		ent->client->pers.max_stamina += STAMINA_PLAYER_LEVEL;
-		ent->client->pers.souls -= xplevel[ent->client->pers.stamina_level]*2;
-		ent->client->pers.stamina_level++;
-	}
-	else {
-		sprintf(msg + strlen(msg), "Could not upgrade stamina.");
-		if (ent->client->pers.stamina_level < 99)
-			sprintf(msg + strlen(msg), "Not enough stroggpoints (%i more needed).", xplevel[ent->client->pers.stamina_level]*2 - ent->client->pers.souls);
-		else
-			sprintf(msg + strlen(msg), "Stamina is maxed!");
-		gi.cprintf(ent, PRINT_HIGH, "%s\n", msg);
-		return;
-	}
-	ent->client->pers.stamina = ent->client->pers.max_stamina;
-	MainMenuOpen(ent);
-}
-
-void UpgradeWeapon(edict_t *ent, pmenuhnd_t *hnd) {
-	gitem_t *it;
-	int i;
-	char msg[128] = "";
-	i = hnd->cur+5;
-	while (i < 18) {
-		if (ent->client->pers.inventory[i]) {
-			it = &itemlist[i];
-			if (ent->client->pers.souls >= xplevel[ent->client->pers.levels[ITEM_INDEX(it)]] && ent->client->pers.levels[ITEM_INDEX(it)] < 99) {
-				//upgrade
-				ent->client->pers.souls -= xplevel[ent->client->pers.levels[ITEM_INDEX(it)]];
-				ent->client->pers.levels[ITEM_INDEX(it)]++;
-				gi.cprintf(ent, PRINT_HIGH, "%s updated.\n", it->classname);
-				break;
-			}
-			else {
-				sprintf(msg + strlen(msg), "Could not upgrade %s.", it->pickup_name);
-				if(ent->client->pers.levels[ITEM_INDEX(it)] < 99)
-					sprintf(msg + strlen(msg), "Not enough stroggpoints (%i more needed).", xplevel[ent->client->pers.levels[ITEM_INDEX(it)]] - ent->client->pers.souls);
-				else 
-					sprintf(msg + strlen(msg), "Weapon is maxed!");
-				gi.cprintf(ent, PRINT_HIGH, "%s\n", msg);
-				return;
-			}
-		}
-		i++;
-	}
-	//gi.cprintf(ent, PRINT_HIGH, "hnd->num:%i, hnd->cur:%i hnd->entries->text:%s\n",hnd->num, hnd->cur, hnd->entries->text);
-	WeaponMenuOpen(ent, hnd);
-}
-
-void UpgradeArmor(edict_t *ent, pmenuhnd_t *hnd) {
-	gitem_t *it;
-	int i;
-	i = hnd->cur + 5;
-	while (i < 18) {
-		if (ent->client->pers.inventory[i]) {
-			it = &itemlist[i];
-			if (ent->client->pers.souls >= xplevel[ent->client->pers.levels[ITEM_INDEX(it)]] && ent->client->pers.levels[ITEM_INDEX(it)] < 99) {
-				//upgrade
-				ent->client->pers.souls -= xplevel[ent->client->pers.levels[ITEM_INDEX(it)]];
-				ent->client->pers.levels[ITEM_INDEX(it)]++;
-				gi.cprintf(ent, PRINT_HIGH, "%s updated.\n", it->classname);
-				break;
-			}
-			else {
-				gi.cprintf(ent, PRINT_HIGH, "Could not upgrade %s%s\n", it->pickup_name, ent->client->pers.levels[ITEM_INDEX(it)] < 99 ? ". Not enough stroggpoints" : " anymore!");
-				return;
-			}
-		}
-		i++;
-	}
-	//gi.cprintf(ent, PRINT_HIGH, "hnd->num:%i, hnd->cur:%i hnd->entries->text:%s\n",hnd->num, hnd->cur, hnd->entries->text);
-	WeaponMenuOpen(ent, hnd);
-}
-
 void DeleteItems(edict_t *ent) {
 	edict_t *item;
 	(void)ent;
@@ -243,7 +145,7 @@ void FindBonfire(edict_t *ent) {
 void DS_Respawn(edict_t *ent) {
 	gitem_t *soul;
 
-	RemoveSouls(ent);
+	RemoveSouls(ent); //remove dropped souls from stroggs.
 
 	//drop soul
 	if (ent->client->pers.souls) {
@@ -252,7 +154,8 @@ void DS_Respawn(edict_t *ent) {
 		Drop_Item(ent, soul);
 	}
 	ent->client->pers.souls = 0;
-	PutClientInServer(ent);
+	//PutClientInServer(ent);
+	FetchClientEntData(ent);
 	FindBonfire(ent);
 	RespawnEntities(ent);
 	ent->s.event = EV_PLAYER_TELEPORT;

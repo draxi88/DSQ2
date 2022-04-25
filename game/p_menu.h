@@ -29,6 +29,7 @@ typedef struct pmenuhnd_s {
 	struct pmenu_s *entries;
 	int cur;
 	int num;
+	int index;
 	void *arg;
 } pmenuhnd_t;
 
@@ -37,7 +38,7 @@ typedef void(*SelectFunc_t)(edict_t *ent, pmenuhnd_t *hnd);
 typedef struct pmenu_s {
 	char *text;
 	int align;
-	char *classname;
+	int index;
 	SelectFunc_t SelectFunc;
 } pmenu_t;
 
@@ -52,4 +53,4 @@ void PMenu_Select(edict_t *ent);
 
 
 extern pmenu_t mainmenu[18];
-extern pmenu_t weaponmenu[18];
+extern pmenu_t itemmenu[18];

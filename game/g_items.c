@@ -36,9 +36,9 @@ void Weapon_GrenadeLauncher (edict_t *ent);
 void Weapon_Railgun (edict_t *ent);
 void Weapon_BFG (edict_t *ent);
 
-gitem_armor_t jacketarmor_info	= { 25,  50, .30f, .00f, ARMOR_JACKET};
-gitem_armor_t combatarmor_info	= { 50, 100, .60f, .30f, ARMOR_COMBAT};
-gitem_armor_t bodyarmor_info	= {100, 200, .80f, .60f, ARMOR_BODY};
+gitem_armor_t jacketarmor_info	= { 25,  50, .20f, .10f, ARMOR_JACKET};
+gitem_armor_t combatarmor_info	= { 50, 100, .40f, .20f, ARMOR_COMBAT};
+gitem_armor_t bodyarmor_info	= {100, 200, .60f, .30f, ARMOR_BODY};
 
 int	jacket_armor_index;
 int	combat_armor_index;
@@ -620,7 +620,9 @@ qboolean Pickup_Armor (edict_t *ent, edict_t *other)
 	int				newcount;
 	float			salvage;
 	int				salvagecount;
-
+	other->client->pers.inventory[ITEM_INDEX(ent->item)] += 1;
+	other->client->pers.levels[ITEM_INDEX(ent->item)] = 1;
+	return;
 	// get info on new armor
 	newinfo = (gitem_armor_t *)ent->item->info;
 
@@ -634,14 +636,6 @@ qboolean Pickup_Armor (edict_t *ent, edict_t *other)
 		else
 			other->client->pers.inventory[old_armor_index] += 2;
 	}
-
-	//DSQ2
-	if (!Q_stricmp(ent->classname, "item_armor_jacket"))
-		other->client->pers.JacketArmor = true;
-	if (!Q_stricmp(ent->classname, "item_armor_combat"))
-		other->client->pers.CombatArmor = true;
-	if (!Q_stricmp(ent->classname, "item_armor_body"))
-		other->client->pers.BodyArmor = true;
 
 	// if player has no armor, just use it
 	else if (!old_armor_index)
