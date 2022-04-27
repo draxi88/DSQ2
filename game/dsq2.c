@@ -135,7 +135,7 @@ void RemoveSouls(edict_t *ent) {
 void FindBonfire(edict_t *ent) {
 	vec3_t bonfire;
 	VectorCopy(ent->client->pers.last_bonfire->s.origin, bonfire);
-	bonfire[2] += 15;
+	bonfire[2] += 20;
 	for (int i = 0; i < 3; i++)
 	{
 		ent->client->ps.pmove.delta_angles[i] = ANGLE2SHORT(ent->client->pers.last_bonfire->s.angles[i] - ent->client->resp.cmd_angles[i]);
@@ -171,18 +171,46 @@ void DS_Respawn(edict_t *ent) {
 }
 
 void SpawnSouls() {
+
 	//DSQ2
 	edict_t *ent;
-	gitem_t *soul;
-	soul = FindItemByClassname("spawned_soul");
-	ent = G_Spawn();
+	edict_t *soul;
+	gitem_t *spawnsoul;
+	spawnsoul = FindItemByClassname("spawned_soul");
 
+	//if (strcmp(level.mapname, "base1") == 0) {
+	//	soul = G_Spawn();
+	//	soul->item = spawnsoul;
+	//	soul->classname = soul->item->classname;
+	//	ent->count = 1337;
+	//	soul->spawnflags = DROPPED_ITEM;
+	//	soul->s.effects = EF_ROTATE | EF_QUAD;
+	//	soul->s.renderfx = RF_GLOW;
+	//	VectorSet(soul->mins, -15, -15, -15);
+	//	VectorSet(soul->maxs, 15, 15, 15);
+	//	gi.setmodel(soul, "models/objects/gibs/skull/tris.md2");
+	//	soul->solid = SOLID_TRIGGER;
+	//	//soul->touch = Touch_Item;
+	//	VectorSet(soul->s.origin, 75, -126, 46);
+	//	gi.linkentity(soul);
+	//}
+
+	ent = G_Spawn();
 	if (strcmp(level.mapname, "base1") == 0) {
 		VectorSet(ent->s.origin, -234, 1415, -75);
-		soul->count_width = 1000;
-		Drop_Item(ent, soul);
+		spawnsoul->count_width = 1000;
+		Drop_Item(ent, spawnsoul);
+		VectorSet(ent->s.origin, 1058, 916, -178);
+		Drop_Item(ent, spawnsoul);
+		VectorSet(ent->s.origin, -1372, 1607, 0);
+		Drop_Item(ent, spawnsoul);
 		//gi.dprintf("%s spawned at %s\n", soul->classname, vtos(ent->s.origin));
 	}
+	/*else if (strcmp(level.mapname, "base2") == 0) {
+		VectorSet(ent->s.origin, 386, 363, -124);
+		strogg->count_width = 500;
+		Drop_Item(ent, strogg);
+	}*/
 	gi.linkentity(ent);
 
 	G_FreeEdict(ent);

@@ -443,9 +443,9 @@ void ArmorSelected(edict_t *ent, pmenuhnd_t *p)
 {
 	gitem_t *it;
 	gitem_armor_t *armor;
-	char absorb[26];
+	char absorb[32];
 	char abAscii[12];
-	char protect[26];
+	char protect[32];
 	char protAscii[12];
 	int selected;
 	if (ent->client->menu)
@@ -460,12 +460,14 @@ void ArmorSelected(edict_t *ent, pmenuhnd_t *p)
 		it = &itemlist[p->index];
 		armor = it->info;
 		sprintf(it->menuname, "%-18s lvl:%i", it->pickup_name, ent->client->pers.levels[p->index]);
+		armor->base_count = 1 * ent->client->pers.levels[p->index];
+		armor->normal_protection = 0.20f + (0.025f * ent->client->pers.levels[p->index]);
 		itemmenu[2].text = it->menuname;
 		sprintf(abAscii, "%i", armor->base_count);
-		sprintf(absorb, "Absorption: %s", HighAscii(abAscii));
+		sprintf(absorb, "Absorption: %s hp", HighAscii(abAscii));
 		itemmenu[3].text = absorb;
 		sprintf(protAscii, "%0.3f", armor->normal_protection);
-		sprintf(protect, "Protection: %s", HighAscii(protAscii));
+		sprintf(protect, "Protection: %s ", HighAscii(protAscii));
 		itemmenu[4].text = protect;
 		 
 		itemmenu[6].index = p->index;
@@ -509,10 +511,9 @@ void UpgradeArmor(edict_t *ent, pmenuhnd_t *hnd) {
 			armor->base_count += 1;
 			ent->client->pers.normalArmor = armor->normal_protection;
 			ent->client->pers.maxProtection = armor->base_count;
-			gi.dprintf("%f & %i\n", ent->client->pers.normalArmor, ent->client->pers.maxProtection);
 		}
 		else {
-			gi.cprintf(ent, PRINT_HIGH, "Could not upgrade %s. Not enough soulpoints\n", it->pickup_name);
+			gi.cprintf(ent, PRINT_HIGH, "Could not upgrade %s. Not enough soulpoints! (%i more needed)\n", it->pickup_name, xplevel[ent->client->pers.levels[ITEM_INDEX(it)]] - ent->client->pers.souls);
 			return;
 		}
 	}

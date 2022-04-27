@@ -56,6 +56,8 @@ void monster_fire_blaster (edict_t *self, vec3_t start, vec3_t dir, int damage, 
 	
 	if (strstr(self->classname, "soldier") == 0)
 		self->ammo_type = -1;
+	else
+		self->ammo_type = AMMO_CELLS;
 
 	gi.WriteByte (svc_muzzleflash2);
 	gi.WriteShort (self - g_edicts);
@@ -558,9 +560,11 @@ void monster_death_use (edict_t *self)
 			case AMMO_CELLS:
 				ammo = FindItemByClassname("ammo_cells");
 				break;
+			default: 
+				ammo = NULL;
 			}
 			ammo->dropcount = random() * 10;
-			if (ammo->dropcount > 0)
+			if (ammo->dropcount > 0 && ammo != NULL)
 				Drop_Item(self, ammo);
 		}
 	}
