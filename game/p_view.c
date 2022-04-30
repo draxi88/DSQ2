@@ -446,30 +446,34 @@ void SV_CalcBlend (edict_t *ent)
 		remaining = (int)(ent->client->quad_framenum - level.framenum);
 		if (remaining == 30)	// beginning to fade
 			gi.sound(ent, CHAN_ITEM, gi.soundindex("items/damage2.wav"), 1, ATTN_NORM, 0);
-		if (remaining > 30 || (remaining & 4) )
-			SV_AddBlend (0, 0, 1, 0.08f, ent->client->ps.blend);
+		if (remaining > 30 || (remaining & 4))
+			SV_AddBlend(0, 0, 1, 0.08f, ent->client->ps.blend);
 	}
 	else if (ent->client->invincible_framenum > level.framenum)
 	{
 		remaining = (int)(ent->client->invincible_framenum - level.framenum);
 		if (remaining == 30)	// beginning to fade
 			gi.sound(ent, CHAN_ITEM, gi.soundindex("items/protect2.wav"), 1, ATTN_NORM, 0);
-		if (remaining > 30 || (remaining & 4) )
-			SV_AddBlend (1, 1, 0, 0.08f, ent->client->ps.blend);
+		if (remaining > 30 || (remaining & 4))
+			SV_AddBlend(1, 1, 0, 0.08f, ent->client->ps.blend);
 	}
 	else if (ent->client->enviro_framenum > level.framenum)
 	{
 		remaining = (int)(ent->client->enviro_framenum - level.framenum);
 		if (remaining == 30)	// beginning to fade
 			gi.sound(ent, CHAN_ITEM, gi.soundindex("items/airout.wav"), 1, ATTN_NORM, 0);
-		if (remaining > 30 || (remaining & 4) )
-			SV_AddBlend (0, 1, 0, 0.08f, ent->client->ps.blend);
+		if (remaining > 30 || (remaining & 4))
+			SV_AddBlend(0, 1, 0, 0.08f, ent->client->ps.blend);
 	}
 	else if (ent->client->menu)
 	{
 		SV_AddBlend(0.5, 0.5, 0.5, 0.5, ent->client->ps.blend);
 	}
-	else if (ent->client->respawn_time > level.time - 3.0)
+	else if (ent->client->die_time > level.time - 2.0f && ent->deadflag == DEAD_DEAD) {
+		blend = (level.time - ent->client->die_time) / 2.0f;
+		SV_AddBlend(0.0, 0.0, 0.0, blend, ent->client->ps.blend);
+	}
+	else if (ent->client->respawn_time > level.time - 3.0f)
 	{
 		blend = ((ent->client->respawn_time + 3.0) - level.time) / 3;
 		SV_AddBlend(0.0, 0.0, 0.0, blend, ent->client->ps.blend);
@@ -480,9 +484,11 @@ void SV_CalcBlend (edict_t *ent)
 		remaining = (int)(ent->client->breather_framenum - level.framenum);
 		if (remaining == 30)	// beginning to fade
 			gi.sound(ent, CHAN_ITEM, gi.soundindex("items/airout.wav"), 1, ATTN_NORM, 0);
-		if (remaining > 30 || (remaining & 4) )
-			SV_AddBlend (0.4f, 1, 0.4f, 0.04f, ent->client->ps.blend);
+		if (remaining > 30 || (remaining & 4))
+			SV_AddBlend(0.4f, 1, 0.4f, 0.04f, ent->client->ps.blend);
 	}
+	else if (ent->deadflag == DEAD_DEAD)
+		SV_AddBlend(0.0f, 0.0f, 0.0f, 1.0f, ent->client->ps.blend);
 
 	// add for damage
 	if (ent->client->damage_alpha > 0)
@@ -1111,7 +1117,14 @@ void ClientEndServerFrame (edict_t *ent)
 	ent->sumDamage -= armorSave;
 	ent->health -= ent->sumDamage;
 	ent->sumDamage = 0;
-	if (ent->health <= 0)
+
+	//DIE!
+	if (ent->health <= 0 && ent->deadflag != DEAD_DEAD) {
+		ent->deadflag = DEAD_DEAD;
+		ent->client->die_time = level.time;
+		gi.centerprintf(ent, "YOU DIED!!");
+	}
+	else if (ent->deadflag == DEAD_DEAD && ent->client->die_time < (level.time - 2.0f))
 		DS_Respawn(ent);
 }
 

@@ -287,7 +287,6 @@ void Think_Weapon (edict_t *ent)
 		ent->client->newweapon = NULL;
 		ChangeWeapon (ent);
 	}
-
 	// call active weapon think routine
 	if (ent->client->pers.weapon && ent->client->pers.weapon->weaponthink)
 	{
