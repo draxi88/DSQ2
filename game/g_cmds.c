@@ -266,7 +266,6 @@ void Cmd_Give_f (edict_t *ent)
 		if (!give_all)
 			return;
 	}
-
 	if (give_all)
 	{
 		for (i=0 ; i<game.num_items ; i++)

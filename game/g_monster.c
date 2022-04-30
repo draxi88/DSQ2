@@ -563,9 +563,11 @@ void monster_death_use (edict_t *self)
 			default: 
 				ammo = NULL;
 			}
-			ammo->dropcount = random() * 10;
-			if (ammo->dropcount > 0 && ammo != NULL)
-				Drop_Item(self, ammo);
+			if (ammo != NULL) {
+				ammo->dropcount = random() * 10;
+				if (ammo->dropcount > 0 && ammo != NULL)
+					Drop_Item(self, ammo);
+			}
 		}
 	}
 

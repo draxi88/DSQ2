@@ -73,6 +73,10 @@ int xplevel[99];
 #define START_RAILGUN		100
 #define START_BFG			200
 
+//macros
+#define ifbetween(a,b,c) if(a>b && a<c)
+#define ifnotbetween(a,b,c) if(a<b || a>c)
+
 
 #ifndef ENTITY_SET
 #define ENTITY_SET
@@ -116,3 +120,4 @@ void ED_CallSpawn(edict_t *ent);
 void FindBonfire(edict_t *ent);
 void DS_Respawn(edict_t *ent);
 void SpawnSouls();
+void Weapon_Blaster(edict_t *ent);

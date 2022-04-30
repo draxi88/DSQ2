@@ -147,11 +147,15 @@ void FindBonfire(edict_t *ent) {
 	VectorCopy(bonfire, ent->s.origin);
 }
 
+
+
+
 void DS_Respawn(edict_t *ent) {
 	gitem_t *soul;
+	vec3_t	mins = { -16, -16, -24 };
+	vec3_t	maxs = { 16, 16, 32 };
 
 	RemoveSouls(ent); //remove dropped souls from stroggs.
-
 	//drop soul
 	if (ent->client->pers.souls) {
 		soul = FindItemByClassname("player_soul");//&itemlist[43];
@@ -159,15 +163,30 @@ void DS_Respawn(edict_t *ent) {
 		Drop_Item(ent, soul);
 	}
 	ent->client->pers.souls = 0;
-	//PutClientInServer(ent);
+	//
 	FetchClientEntData(ent);
 	FindBonfire(ent);
 	RespawnEntities(ent);
+	
+	//PutClientInServer(ent);
+	// clear entity values
+	ent->deadflag = DEAD_NO;
+	VectorCopy(mins, ent->mins);
+	VectorCopy(maxs, ent->maxs);
+	VectorClear(ent->velocity);
+	   
 	ent->s.event = EV_PLAYER_TELEPORT;
 	// hold in place briefly
 	ent->client->ps.pmove.pm_flags = PMF_TIME_TELEPORT;
-	ent->client->ps.pmove.pm_time = 300;
+	ent->client->ps.pmove.pm_time = 500.0f;
 	ent->client->respawn_time = level.time;
+
+
+	//Get weapon up
+	ifnotbetween(ent->client->pers.selected_item,7,17)
+		ent->client->pers.selected_item = 7;
+	ent->client->pers.weapon = &itemlist[ent->client->pers.selected_item];
+	
 }
 
 void SpawnSouls() {

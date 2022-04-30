@@ -554,11 +554,7 @@ player_die
 void player_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damage, vec3_t point)
 {
 	int		n;
-
-	//DSQ2
-	DS_Respawn(self);
 	return;
-
 	VectorClear (self->avelocity);
 
 	self->takedamage = DAMAGE_YES;
@@ -577,32 +573,32 @@ void player_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damag
 //	self->solid = SOLID_NOT;
 	self->svflags |= SVF_DEADMONSTER;
 
-	if (!self->deadflag)
-	{
-		self->client->respawn_time = level.time + 1.0f;
-		LookAtKiller (self, inflictor, attacker);
-		self->client->ps.pmove.pm_type = PM_DEAD;
-		ClientObituary (self, inflictor, attacker);
-		TossClientWeapon (self);
-		if (deathmatch->value)
-			Cmd_Help_f (self);		// show scores
+	//if (!self->deadflag)
+	//{
+	//	self->client->respawn_time = level.time + 1.0f;
+	//	LookAtKiller (self, inflictor, attacker);
+	//	self->client->ps.pmove.pm_type = PM_DEAD;
+	//	ClientObituary (self, inflictor, attacker);
+	//	TossClientWeapon (self);
+	//	if (deathmatch->value)
+	//		Cmd_Help_f (self);		// show scores
 
-		// clear inventory
-		// this is kind of ugly, but it's how we want to handle keys in coop
-		for (n = 0; n < game.num_items; n++)
-		{
-			if (coop->value && itemlist[n].flags & IT_KEY)
-				self->client->resp.coop_respawn.inventory[n] = self->client->pers.inventory[n];
-			self->client->pers.inventory[n] = 0;
-		}
-	}
+	//	// clear inventory
+	//	// this is kind of ugly, but it's how we want to handle keys in coop
+	//	for (n = 0; n < game.num_items; n++)
+	//	{
+	//		if (coop->value && itemlist[n].flags & IT_KEY)
+	//			self->client->resp.coop_respawn.inventory[n] = self->client->pers.inventory[n];
+	//		self->client->pers.inventory[n] = 0;
+	//	}
+	//}
 
-	// remove powerups
-	self->client->quad_framenum = 0;
-	self->client->invincible_framenum = 0;
-	self->client->breather_framenum = 0;
-	self->client->enviro_framenum = 0;
-	self->flags &= ~FL_POWER_ARMOR;
+	//// remove powerups
+	//self->client->quad_framenum = 0;
+	//self->client->invincible_framenum = 0;
+	//self->client->breather_framenum = 0;
+	//self->client->enviro_framenum = 0;
+	//self->flags &= ~FL_POWER_ARMOR;
 
 	if (self->health < -40)
 	{	// gib
@@ -1831,7 +1827,6 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 	if (client->latched_buttons & BUTTON_ATTACK)
 	{
 		if (client->resp.spectator) {
-
 			client->latched_buttons = 0;
 
 			if (client->chase_target) {
@@ -1937,7 +1932,7 @@ void ClientBeginServerFrame (edict_t *ent)
 			if ( ( client->latched_buttons & buttonMask ) ||
 				(deathmatch->value && ((int)dmflags->value & DF_FORCE_RESPAWN) ) )
 			{
-				respawn(ent);
+				//respawn(ent);
 				client->latched_buttons = 0;
 			}
 		}
